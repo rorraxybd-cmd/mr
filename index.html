@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>rorraxy - B2B Retail Global E-Commerce</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png">
+    <link rel="apple-touch-icon" href="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- FIREBASE SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDokhLgGe4Ib7oxUJ8zczLFWj0YJKk57Y",
+            authDomain: "rorraxy-fcb91.firebaseapp.com",
+            projectId: "rorraxy-fcb91",
+            storageBucket: "rorraxy-fcb91.firebasestorage.app",
+            messagingSenderId: "880891394208",
+            appId: "1:880891394208:web:3bd8ccacf68ad5d53af1c5",
+            measurementId: "G-0XTRV9TPM3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.RorraxyDB = db;
+
+        // ফায়ারবেস থেকে প্রোডাক্ট ফেচ করার ফাংশন
+        window.loadProductsFromFirebase = async function() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                const feedContainer = document.getElementById('productFeed');
+                if(!querySnapshot.empty && feedContainer) {
+                    let htmlContent = "";
+                    querySnapshot.forEach((docSnap) => {
+                        let prod = docSnap.data();
+                        let pId = prod.productId || docSnap.id;
+                        let pImg = prod.imageUrl || "https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(1).jpg";
+                        let pPrice = prod.price ? `$${prod.price}` : "$100.00";
+                        let pLikes = prod.likes || 500;
+
+                        htmlContent += `
+                        <div class="product-card" data-product-id="${pId}" data-default-likes="${pLikes}">
+                            <div class="product-media-box" onclick="openFirebaseProductDetail('${pId}')">
+                                <img src="${pImg}" alt="Product" loading="lazy">
+                            </div>
+                            <div class="card-footer-actions">
+                                <span class="product-price-tag">${pPrice}</span>
+                                <div class="card-sub-actions">
+                                    <div class="love-action card-love-btn" onclick="toggleLove(this)">
+                                        <i class="fa-solid fa-heart"></i> <span class="love-count">${pLikes}</span>
+                                    </div>
+                                    <button class="share-action-btn" onclick="openInlineShare(this)">
+                                        <i class="fa-solid fa-share-nodes"></i> Share
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="inline-card-share-popup">
+                                <div class="glass-popup-header">
+                                    <span class="glass-popup-title">SHARE</span>
+                                    <button class="glass-close-btn" onclick="closeInlineShare(this)"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div class="glass-share-grid">
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'whatsapp')"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'messenger')"><i class="fa-brands fa-facebook-messenger"></i><span>Messenger</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'telegram')"><i class="fa-brands fa-telegram"></i><span>Telegram</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'twitter')"><i class="fa-brands fa-x-twitter"></i><span>Twitter</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'linkedin')"><i class="fa-brands fa-linkedin-in"></i><span>LinkedIn</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'facebook')"><i class="fa-brands fa-facebook-f"></i><span>Facebook</span></div>
+                                </div>
+                                <div class="glass-copy-row">
+                                    <input type="text" class="glass-copy-input lowercase-url" readonly value="https://rorraxy.com/product?id=${pId}">
+                                    <button class="glass-copy-btn" onclick="copyLinkDirectSilent(this)">COPY</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                    feedContainer.innerHTML = htmlContent;
+                }
+            } catch (e) {
+                console.error("Error loading products from Firebase: ", e);
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window.loadProductsFromFirebase();
+        });
+    </script>
+
+    <style>
+        :root {
+            --bg-retail: #030305;
+            --card-retail: #0e0e12;
+            --header-retail: rgba(8, 8, 10, 0.98);
+            --footer-retail: rgba(8, 8, 10, 0.98);
+            --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --gold-solid: #d4af37;
+            --pink-love: #ff2a85;
+            --text-white: #ffffff;
+            --text-gray: #a0a0ab;
+            --font-main: 'Poppins', sans-serif;
+        }
+
+        html, body { 
+            width: 100%; max-width: 100%; overflow-x: hidden; 
+            background: var(--bg-retail) !important; 
+            color: var(--text-white); font-family: var(--font-main); 
+            min-height: 100vh; font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        
+        body { padding-top: 50px; padding-bottom: 75px; text-transform: uppercase !important; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        header.app-header {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--header-retail); backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: flex; flex-direction: column; border: none !important; box-shadow: none !important;
+            transform: translateZ(0);
+        }
+
+        .header-top-row {
+            display: flex; align-items: center; justify-content: space-between; width: 100%; height: 42px;
+            background: rgba(12,12,16,0.98);
+        }
+
+        .trending-marquee-bar {
+            overflow: hidden; white-space: nowrap; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+            flex: 1; display: flex; align-items: center; height: 100%; position: relative;
+            transform: translateZ(0);
+        }
+        
+        .marquee-container { 
+            display: flex; width: max-content; 
+            animation: smoothLeftToRightScroll 35s linear infinite; 
+            will-change: transform; 
+            transform: translate3d(-50%, 0, 0);
+            backface-visibility: hidden;
+        }
+
+        .marquee-group { display: flex; align-items: center; gap: 35px; padding-right: 35px; flex-shrink: 0; }
+        .marquee-group span { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+        .txt-gold { background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        @keyframes smoothLeftToRightScroll {
+            0% { transform: translate3d(-50%, 0, 0); }
+            100% { transform: translate3d(0, 0, 0); }
+        }
+
+        .header-flag-corner {
+            padding: 4px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15,15,20,0.98);
+            height: 100%; flex-shrink: 0; border: none !important; gap: 2px;
+        }
+        .header-corner-flag-img { width: 24px; height: 15px; object-fit: cover; border-radius: 2px; border: 1px solid rgba(255,255,255,0.3); }
+        .header-retail-txt { font-size: 0.55rem; font-weight: 700; color: #ffffff !important; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1; }
+
+        .inline-search-section {
+            display: none; padding: 12px 16px; background: #08080a; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.2);
+            width: 100%; box-sizing: border-box; z-index: 999;
+        }
+        .search-clean-box {
+            display: inline-flex; align-items: center; background: #000000; border-radius: 30px; padding: 6px 16px; gap: 10px; 
+            width: 100%; max-width: 500px; border: 1px solid rgba(212,175,55,0.35); caret-color: var(--gold-solid);
+        }
+        .search-clean-box input { background: none; border: none; outline: none; color: #fff; font-size: 0.85rem; width: 100%; font-family: var(--font-main); caret-color: var(--gold-solid); }
+        .search-clean-btn { background: var(--gold-gradient); border: none; color: #000; font-weight: 700; font-size: 0.72rem; padding: 5px 14px; border-radius: 20px; cursor: pointer; }
+
+        /* ইউ মেনু মোডাল ওভারলে */
+        .luxury-center-modal-overlay {
+            display: none; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+            background: rgba(2, 2, 4, 0.92) !important; z-index: 99999 !important; backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;
+        }
+        .luxury-center-modal-box {
+            background: #0b0b10; width: 100%; max-width: 480px; border-radius: 24px; 
+            padding: 28px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; 
+            position: relative; border: 1px solid rgba(212,175,55,0.3); max-height: 90vh; overflow-y: auto;
+            scrollbar-width: thin; scrollbar-color: var(--gold-solid) #0b0b10;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            -webkit-overflow-scrolling: touch;
+        }
+        .luxury-modal-close-btn { 
+            position: absolute; top: 16px; right: 18px;
+            background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); color: var(--gold-solid); 
+            font-size: 1.1rem; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; transition: 0.3s; z-index: 10;
+        }
+        .luxury-modal-close-btn:hover { background: rgba(212,175,55,0.25); transform: scale(1.05); }
+
+        .luxury-modal-logo-large { width: 85px; height: 85px; object-fit: contain; margin-bottom: 10px; cursor: pointer; }
+        
+        .modal-material-info-text {
+            font-size: 0.72rem; font-weight: 600; color: #ffffff !important; text-align: center;
+            margin-bottom: 12px; line-height: 1.4; text-transform: uppercase; letter-spacing: 1.2px;
+            padding: 0 10px; display: block !important; visibility: visible !important; opacity: 1 !important;
+        }
+
+        .modal-marquee-wrapper {
+            width: 100%; overflow: hidden; white-space: nowrap; margin-bottom: 16px;
+            background: rgba(18, 18, 26, 0.7); padding: 9px 0; border-radius: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.2); display: block !important;
+        }
+        .modal-marquee-container {
+            display: flex; width: max-content;
+            animation: smoothLeftToRightScroll 30s linear infinite; 
+        }
+        .modal-marquee-group {
+            display: flex; align-items: center; gap: 25px; padding-right: 25px; font-size: 0.72rem; font-weight: 600;
+        }
+
+        .luxury-modal-title-top {
+            font-size: 1.1rem; font-weight: 700; background: var(--gold-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px;
+            margin-bottom: 14px; text-transform: uppercase; cursor: pointer;
+        }
+        .luxury-options-fullstack { display: flex; flex-direction: column; gap: 12px; width: 100%; align-items: center; }
+        .luxury-action-btn-item {
+            background: #13131a; color: #ffffff; padding: 14px 20px; border-radius: 14px; text-decoration: none; 
+            display: flex; align-items: center; justify-content: space-between;
+            border: 1px solid rgba(212,175,55,0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .luxury-action-btn-item:hover {
+            border-color: var(--gold-solid); transform: translateY(-2px);
+            background: #181822; box-shadow: 0 6px 20px rgba(212,175,55,0.15);
+        }
+        .luxury-action-btn-item .btn-left-part { display: flex; align-items: center; gap: 14px; }
+        .luxury-action-btn-item i { font-size: 1.2rem; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; width: 24px; text-align: center; }
+        .btn-text-stack { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+        .btn-main-title { font-size: 0.88rem; font-weight: 600; color: #ffffff; text-transform: uppercase; line-height: 1.3; }
+        .explore-subtxt { font-size: 0.65rem; font-weight: 600; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+        .btn-right-arrow { font-size: 0.85rem; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; transition: transform 0.3s; }
+
+        .feed-container {
+            padding: 8px 4px; column-count: 2; column-gap: 5px; width: 100%; max-width: 1400px; margin: 0 auto;
+        }
+        @media (min-width: 768px) { 
+            .feed-container { column-count: 5; column-gap: 8px; padding: 10px 8px; } 
+        }
+
+        .product-card {
+            break-inside: avoid; margin-bottom: 5px !important; background: var(--card-retail); 
+            border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+            display: inline-block; width: 100%; transition: transform 0.2s ease, border-color 0.2s ease; 
+            border: 1px solid rgba(255,255,255,0.05); position: relative;
+            transform: translateZ(0);
+        }
+        .product-card:hover { border-color: rgba(212,175,55,0.3); }
+
+        .product-media-box { position: relative; width: 100%; cursor: pointer; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .product-media-box img { width: 100%; height: auto; display: block; object-fit: contain; background: #000; }
+        
+        .card-footer-actions { 
+            display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; 
+            background: #000000 !important; border-top: 1px solid rgba(212,175,55,0.15); gap: 6px; 
+        }
+        .product-price-tag { font-size: 0.78rem; font-weight: 700; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .card-sub-actions { display: flex; align-items: center; gap: 10px; justify-content: center; }
+        
+        .love-action { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.72rem; font-weight: 600; color: #ffffff !important; }
+        .love-action i { color: var(--pink-love); transition: 0.3s; }
+        .love-action.gold-active { background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .love-action.gold-active i { background: var(--gold-gradient) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; filter: drop-shadow(0 0 4px rgba(212,175,55,0.8)); }
+        
+        .share-action-btn { background: none; border: none; font-size: 0.72rem; font-weight: 600; cursor: pointer; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; }
+
+        .inline-card-share-popup {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 8, 12, 0.96); backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); z-index: 100;
+            flex-direction: column; align-items: center; justify-content: center; padding: 10px;
+        }
+        .glass-popup-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 6px; }
+        .glass-popup-title { font-size: 0.65rem; font-weight: 700; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass-close-btn { background: none; border: none; color: #fff; font-size: 0.75rem; cursor: pointer; }
+        
+        .glass-share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; margin-bottom: 8px; }
+        .glass-opt-btn {
+            background: rgba(20, 20, 26, 0.95); border: 1px solid rgba(212,175,55,0.25);
+            border-radius: 6px; padding: 6px 4px; display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; color: #fff; font-size: 0.48rem; text-transform: uppercase; transition: 0.2s; gap: 2px;
+        }
+        .glass-opt-btn i { font-size: 0.85rem; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass-opt-btn:hover { border-color: var(--gold-solid); background: #181822; }
+        
+        .glass-copy-row { display: flex; gap: 5px; width: 100%; }
+        .glass-copy-input { background: rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.1); padding: 5px 8px; border-radius: 6px; color: #fff; font-size: 0.55rem; width: 100%; outline: none; }
+        .glass-copy-btn { background: var(--gold-gradient); border: none; color: #000; font-weight: 700; font-size: 0.55rem; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
+
+        nav.bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--footer-retail);
+            display: flex; justify-content: space-around; align-items: center; padding: 8px 6px;
+            z-index: 1000; backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.8); border: none !important;
+            transform: translateZ(0);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; text-decoration: none;
+            color: var(--text-gray); font-size: 0.62rem; font-weight: 600; cursor: pointer; text-align: center; gap: 2px; flex: 1; position: relative;
+            text-transform: uppercase; transition: color 0.2s;
+        }
+        .nav-item:hover { color: var(--gold-solid); }
+        .nav-item i { font-size: 1.15rem; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .cart-icon-box { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        
+        /* কার্ট ব্যাজ কাউন্ট - যখন শূন্য থাকবে তখন নিজে থেকেই লুকিয়ে যাবে বা শূন্য দেখাবে */
+        .cart-badge-circle {
+            position: absolute; top: -6px; right: -12px; background: var(--pink-love); color: #fff;
+            font-size: 0.55rem; font-weight: 700; width: 16px; height: 16px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px var(--pink-love);
+        }
+        .cart-badge-circle.empty-badge {
+            display: none !important;
+        }
+        .cart-custom-svg { width: 22px; height: 22px; fill: url(#goldGradientSvg); }
+    </style>
+</head>
+<body id="mainBody">
+
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+      <linearGradient id="goldGradientSvg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#bf953f" />
+        <stop offset="25%" stop-color="#fcf6ba" />
+        <stop offset="50%" stop-color="#b38728" />
+        <stop offset="75%" stop-color="#fbf5b7" />
+        <stop offset="100%" stop-color="#aa771c" />
+      </linearGradient>
+    </svg>
+
+    <!-- উপরের হেডার -->
+    <header class="app-header" id="mainHeader">
+        <div class="header-top-row">
+            <div class="trending-marquee-bar">
+                <div class="marquee-container" id="marqueeContainer1">
+                    <div class="marquee-group">
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-crown"></i> Women Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-gem"></i> Baby Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-star"></i> Girls Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-fire"></i> Boy Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-bolt"></i> Men Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-gift"></i> Luxury Gift</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-shirt"></i> Matching Set</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-plane"></i> New Products</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-chart-line"></i> Trending Collections</span>
+                    </div>
+                    <div class="marquee-group" aria-hidden="true">
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-crown"></i> Women Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-gem"></i> Baby Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-star"></i> Girls Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-fire"></i> Boy Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-bolt"></i> Men Fashion</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-gift"></i> Luxury Gift</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-shirt"></i> Matching Set</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-plane"></i> New Products</span>
+                        <span class="txt-gold" onclick="returnHomeDirect(event)"><i class="fa-solid fa-chart-line"></i> Trending Collections</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-flag-corner">
+                <img id="cornerFlagImg" src="https://flagcdn.com/w80/bd.png" alt="Country Flag" class="header-corner-flag-img" title="Visitor Country">
+                <span class="header-retail-txt" id="headerCountryWholesaleTxt">RETAIL</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 'YOU' মেনু মোডাল -->
+    <div id="youMenuModalOverlay" class="luxury-center-modal-overlay">
+        <div class="luxury-center-modal-box" onclick="event.stopPropagation()">
+            <button class="luxury-modal-close-btn" onclick="closeYouMenuModal()"><i class="fa-solid fa-xmark"></i></button>
+            <img src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png" alt="Logo" class="luxury-modal-logo-large" onclick="returnHomeDirect(event)">
+            
+            <div class="modal-material-info-text">
+                AUTHENTIC MATERIALS
+            </div>
+
+            <div class="modal-marquee-wrapper">
+                <div class="modal-marquee-container">
+                    <div class="modal-marquee-group">
+                        <span class="txt-gold"><i class="fa-solid fa-feather"></i> Textiles & Handloom</span>
+                        <span class="txt-gold"><i class="fa-solid fa-shield"></i> Leather</span>
+                        <span class="txt-gold"><i class="fa-solid fa-seedling"></i> Jute</span>
+                        <span class="txt-gold"><i class="fa-solid fa-tree"></i> Wood</span>
+                        <span class="txt-gold"><i class="fa-solid fa-water"></i> Resin</span>
+                        <span class="txt-gold"><i class="fa-solid fa-mountain"></i> Bamboo</span>
+                        <span class="txt-gold"><i class="fa-solid fa-ring"></i> Brass</span>
+                        <span class="txt-gold"><i class="fa-solid fa-coins"></i> Silver</span>
+                        <span class="txt-gold"><i class="fa-solid fa-crown"></i> Gold Plating</span>
+                    </div>
+                    <div class="modal-marquee-group" aria-hidden="true">
+                        <span class="txt-gold"><i class="fa-solid fa-feather"></i> Textiles & Handloom</span>
+                        <span class="txt-gold"><i class="fa-solid fa-shield"></i> Leather</span>
+                        <span class="txt-gold"><i class="fa-solid fa-seedling"></i> Jute</span>
+                        <span class="txt-gold"><i class="fa-solid fa-tree"></i> Wood</span>
+                        <span class="txt-gold"><i class="fa-solid fa-water"></i> Resin</span>
+                        <span class="txt-gold"><i class="fa-solid fa-mountain"></i> Bamboo</span>
+                        <span class="txt-gold"><i class="fa-solid fa-ring"></i> Brass</span>
+                        <span class="txt-gold"><i class="fa-solid fa-coins"></i> Silver</span>
+                        <span class="txt-gold"><i class="fa-solid fa-crown"></i> Gold Plating</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="luxury-modal-title-top" onclick="returnHomeDirect(event)">USER PORTAL</h2>
+            <div class="luxury-options-fullstack">
+                <div class="luxury-action-btn-item" onclick="location.href='https://rorraxy.com/a'">
+                    <div class="btn-left-part">
+                        <i class="fa-solid fa-user"></i>
+                        <div class="btn-text-stack">
+                            <span class="btn-main-title">My Account</span>
+                            <span class="explore-subtxt">Dashboard</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-right btn-right-arrow"></i>
+                </div>
+                <div class="luxury-action-btn-item" onclick="location.href='https://sel.rorraxy.com/'">
+                    <div class="btn-left-part">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <div class="btn-text-stack">
+                            <span class="btn-main-title">Seller Portal</span>
+                            <span class="explore-subtxt">Management</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-right btn-right-arrow"></i>
+                </div>
+                <div class="luxury-action-btn-item" onclick="location.href='https://f.rorraxy.com/'">
+                    <div class="btn-left-part">
+                        <i class="fa-solid fa-handshake"></i>
+                        <div class="btn-text-stack">
+                            <span class="btn-main-title">Affiliate Program</span>
+                            <span class="explore-subtxt">Earn Rewards</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-right btn-right-arrow"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ইনলাইন সার্চ বার -->
+    <div id="inlineSearchSection" class="inline-search-section">
+        <div class="search-clean-box">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--gold-solid);"></i>
+            <input type="text" id="searchInputField" placeholder="SEARCH RORRAXY COLLECTIONS..." autocomplete="off">
+            <button class="search-clean-btn" onclick="executeSearch()">SEARCH</button>
+        </div>
+    </div>
+
+    <!-- প্রোডাক্ট ফিড -->
+    <main class="feed-container" id="productFeed">
+        <div class="product-card" data-product-id="PROD-RRX-001" data-default-likes="500">
+            <div class="product-media-box" onclick="openFirebaseProductDetail('PROD-RRX-001')">
+                <img src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(1).jpg" alt="Sample Product" loading="lazy">
+            </div>
+            <div class="card-footer-actions">
+                <span class="product-price-tag">$100.00</span>
+                <div class="card-sub-actions">
+                    <div class="love-action card-love-btn" onclick="toggleLove(this)">
+                        <i class="fa-solid fa-heart"></i> <span class="love-count">500</span>
+                    </div>
+                    <button class="share-action-btn" onclick="openInlineShare(this)">
+                        <i class="fa-solid fa-share-nodes"></i> Share
+                    </button>
+                </div>
+            </div>
+            <div class="inline-card-share-popup">
+                <div class="glass-popup-header">
+                    <span class="glass-popup-title">SHARE</span>
+                    <button class="glass-close-btn" onclick="closeInlineShare(this)"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="glass-share-grid">
+                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'whatsapp')"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></div>
+                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'messenger')"><i class="fa-brands fa-facebook-messenger"></i><span>Messenger</span></div>
+                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'telegram')"><i class="fa-brands fa-telegram"></i><span>Telegram</span></div>
+                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'twitter')"><i class="fa-brands fa-x-twitter"></i><span>Twitter</span></div>
+                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'linkedin')"><i class="fa-brands fa-linkedin-in"></i><span>LinkedIn</span></div>
+                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'facebook')"><i class="fa-brands fa-facebook-f"></i><span>Facebook</span></div>
+                </div>
+                <div class="glass-copy-row">
+                    <input type="text" class="glass-copy-input lowercase-url" readonly value="https://rorraxy.com/product?id=PROD-RRX-001">
+                    <button class="glass-copy-btn" onclick="copyLinkDirectSilent(this)">COPY</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ফিক্সড বটম ন্যাভবার -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="https://j.rorraxy.com/" class="nav-item">
+            <i class="fa-solid fa-newspaper" style="background:var(--gold-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent;"></i>
+            <span>Journal</span>
+        </a>
+        <a href="https://rorraxy.com/c" class="nav-item">
+            <i class="fa-solid fa-border-all"></i>
+            <span>Category</span>
+        </a>
+        <div class="nav-item" id="youNavBtn" onclick="openYouMenuModal(event)">
+            <i class="fa-solid fa-user"></i>
+            <span>You</span>
+        </div>
+        <div class="nav-item" id="searchNavBtn" onclick="toggleSearch(event)">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>AI Search</span>
+        </div>
+        <a href="https://rorraxy.com/j" class="nav-item" style="text-decoration:none;">
+            <div class="cart-icon-box">
+                <svg class="cart-custom-svg" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                <!-- কার্ট শূন্য থাকলে এটি স্বয়ংক্রিয়ভাবে হাইড থাকবে -->
+                <span class="cart-badge-circle empty-badge" id="floatingCartItemCountBadge">0</span>
+            </div>
+            <span>Cart</span>
+        </a>
+    </nav>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            updateCartBadgeCount();
+            detectVisitorCountry();
+
+            const youBtn = document.getElementById('youNavBtn');
+            if(youBtn) {
+                youBtn.onclick = openYouMenuModal;
+            }
+
+            const searchBtn = document.getElementById('searchNavBtn');
+            if(searchBtn) {
+                searchBtn.onclick = toggleSearch;
+            }
+
+            const youModal = document.getElementById('youMenuModalOverlay');
+            if(youModal) {
+                youModal.onclick = function(event) {
+                    if (event.target === youModal) {
+                        closeYouMenuModal();
+                    }
+                };
+            }
+
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'rorraxy_cart') {
+                    updateCartBadgeCount();
+                }
+            });
+
+            setInterval(() => {
+                updateCartBadgeCount();
+            }, 1500);
+        });
+
+        function openFirebaseProductDetail(productId) {
+            window.location.href = `https://rorraxy.com/product?id=${encodeURIComponent(productId)}`;
+        }
+
+        function returnHomeDirect(event) {
+            if(event) event.stopPropagation();
+            closeAllModals();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function detectVisitorCountry() {
+            try {
+                let response = await fetch('https://ipapi.co/json/');
+                let data = await response.json();
+                if (data && data.country_code) {
+                    let countryCode = data.country_code.toLowerCase();
+                    let countryName = data.country_name ? data.country_name.toUpperCase() : '';
+                    
+                    let cornerFlagImg = document.getElementById('cornerFlagImg');
+                    if(cornerFlagImg) cornerFlagImg.src = `https://flagcdn.com/w80/${countryCode}.png`;
+                    
+                    let wholesaleTxtElem = document.getElementById('headerCountryWholesaleTxt');
+                    if(wholesaleTxtElem) {
+                        wholesaleTxtElem.innerText = `${countryName} RETAIL`;
+                    }
+                }
+            } catch (err) {
+                let wholesaleTxtElem = document.getElementById('headerCountryWholesaleTxt');
+                if(wholesaleTxtElem) wholesaleTxtElem.innerText = `RETAIL`;
+            }
+        }
+
+        function openYouMenuModal(event) {
+            if(event) event.stopPropagation();
+            closeAllModals();
+            const modal = document.getElementById('youMenuModalOverlay');
+            if(modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeYouMenuModal() {
+            const modal = document.getElementById('youMenuModalOverlay');
+            if(modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function closeAllModals() {
+            const youModal = document.getElementById('youMenuModalOverlay');
+            if(youModal) youModal.style.display = 'none';
+
+            const searchBox = document.getElementById('inlineSearchSection');
+            if(searchBox) searchBox.style.display = 'none';
+        }
+
+        function toggleSearch(event) {
+            if(event) event.stopPropagation();
+            const searchBox = document.getElementById('inlineSearchSection');
+            const youModal = document.getElementById('youMenuModalOverlay');
+            
+            if(youModal) youModal.style.display = 'none';
+
+            if (searchBox) {
+                if (searchBox.style.display === 'block') {
+                    searchBox.style.display = 'none';
+                } else {
+                    searchBox.style.display = 'block';
+                    let searchInput = document.getElementById('searchInputField');
+                    if(searchInput) searchInput.focus();
+                }
+            }
+        }
+
+        function executeSearch() { 
+            let searchInput = document.getElementById('searchInputField');
+            if(searchInput) {
+                let query = searchInput.value;
+                if(query.trim() !== "") {
+                    window.location.href = `https://rorraxy.com/product?search=${encodeURIComponent(query)}`;
+                }
+            }
+        }
+
+        function toggleLove(btn) {
+            let countSpan = btn.querySelector('.love-count');
+            let currentLikes = parseInt(countSpan.innerText);
+            if(btn.classList.contains('gold-active')) {
+                btn.classList.remove('gold-active');
+                countSpan.innerText = currentLikes - 1;
+            } else {
+                btn.classList.add('gold-active');
+                countSpan.innerText = currentLikes + 1;
+            }
+        }
+
+        function openInlineShare(btn) {
+            document.querySelectorAll('.inline-card-share-popup').forEach(p => p.style.display = 'none');
+            let card = btn.closest('.product-card');
+            let popup = card.querySelector('.inline-card-share-popup');
+            if(popup) popup.style.display = 'flex';
+        }
+
+        function closeInlineShare(btn) {
+            let popup = btn.closest('.inline-card-share-popup');
+            if(popup) popup.style.display = 'none';
+        }
+
+        function shareToSocial(btn, platform) {
+            let card = btn.closest('.product-card');
+            let urlInput = card.querySelector('.glass-copy-input');
+            let shareUrl = urlInput ? urlInput.value : window.location.href;
+            let text = "Check out this luxury product on Rorraxy:";
+
+            let shareLink = "";
+            if (platform === 'whatsapp') {
+                shareLink = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + shareUrl)}`;
+            } else if (platform === 'messenger') {
+                shareLink = `https://www.facebook.com/dialog/send?link=${encodeURIComponent(shareUrl)}&app_id=291494419107518&redirect_uri=${encodeURIComponent(shareUrl)}`;
+            } else if (platform === 'telegram') {
+                shareLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
+            } else if (platform === 'twitter') {
+                shareLink = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
+            } else if (platform === 'linkedin') {
+                shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+            } else if (platform === 'facebook') {
+                shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+            }
+
+            if (shareLink) {
+                window.open(shareLink, '_blank');
+            }
+        }
+
+        function copyLinkDirectSilent(btn) {
+            let card = btn.closest('.product-card');
+            let inputField = card.querySelector('.glass-copy-input');
+            if (inputField && navigator.clipboard) {
+                navigator.clipboard.writeText(inputField.value).then(() => {
+                    let originalText = btn.innerText;
+                    btn.innerText = "COPIED!";
+                    setTimeout(() => { btn.innerText = originalText; closeInlineShare(btn); }, 800);
+                });
+            }
+        }
+
+        function updateCartBadgeCount() {
+            let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+            let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            let badge = document.getElementById('floatingCartItemCountBadge');
+            if(badge) {
+                badge.innerText = totalQty;
+                if(totalQty > 0) {
+                    badge.classList.remove('empty-badge');
+                } else {
+                    badge.classList.add('empty-badge');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
