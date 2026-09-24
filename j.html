@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>rorraxy - retail cart</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev">
+
+    <link rel="icon" type="image/png" href="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ফায়ারবেস অথ এবং রিয়েলটাইম ডেটা সিঙ্ক -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDokhLgGoe4Ib7oxUJ8zczLFWj0YJKk57Y",
+            authDomain: "rorraxy-fcb91.firebaseapp.com",
+            databaseURL: "https://rorraxy-fcb91-default-rtdb.firebaseio.com/",
+            projectId: "rorraxy-fcb91",
+            storageBucket: "rorraxy-fcb91.firebasestorage.app",
+            messagingSenderId: "880891394208",
+            appId: "1:880891394208:web:3bd8ccacf68ad5d53af1c5",
+            measurementId: "G-0XTRV9TPM3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        setPersistence(auth, browserLocalPersistence).catch((error) => {
+            console.error("Persistence Error:", error);
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                let customerData = {
+                    name: user.displayName || "Valued Customer",
+                    email: user.email,
+                    photoURL: user.photoURL || "https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png"
+                };
+                localStorage.setItem('rorraxy_logged_user', JSON.stringify(customerData));
+                window.openCheckoutAndShippingForm(customerData);
+            }
+        });
+
+        window.handleCartGoogleVerify = async function() {
+            showLuxuryLoader();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                let customerData = {
+                    name: user.displayName || "Valued Customer",
+                    email: user.email,
+                    photoURL: user.photoURL || "https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png"
+                };
+
+                localStorage.setItem('rorraxy_logged_user', JSON.stringify(customerData));
+                hideLuxuryLoader();
+                window.showToast("গুগল ভেরিফিকেশন সফল হয়েছে!");
+                window.openCheckoutAndShippingForm(customerData);
+            } catch (error) {
+                console.error("Auth Error Code:", error.code);
+                console.error("Auth Error Message:", error.message);
+                hideLuxuryLoader();
+                window.showToast("ভেরিফিকেশন ব্যর্থ হয়েছে: " + error.message, true);
+            }
+        };
+
+        window.showToast = function(message, isError = false) {
+            const toast = document.getElementById('toastBox');
+            if(!toast) return;
+            toast.innerText = message;
+            toast.style.borderColor = isError ? '#ff4d4d' : 'var(--gold-solid)';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        }
+
+        function showLuxuryLoader() {
+            let loader = document.getElementById('luxuryLoadingOverlay');
+            if(loader) loader.style.display = 'flex';
+        }
+
+        function hideLuxuryLoader() {
+            let loader = document.getElementById('luxuryLoadingOverlay');
+            if(loader) loader.style.display = 'none';
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-retail: #000000;
+            --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --gold-solid: #d4af37;
+            --text-white: #ffffff;
+            --text-gray: #b5b5be;
+            --font-main: 'Poppins', sans-serif;
+        }
+
+        * { box-sizing: border-box !important; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            width: 100%; max-width: 100%; background: var(--bg-retail) !important; color: var(--text-white);
+            font-family: var(--font-main); font-size: 14px; text-transform: uppercase !important;
+            -webkit-font-smoothing: antialiased; overflow-x: hidden !important; position: relative; min-height: 100vh;
+        }
+
+        .cart-page-container {
+            max-width: 900px; width: 100%; margin: 0 auto; padding: 20px 14px 100px 14px; display: flex; flex-direction: column; gap: 18px;
+        }
+        @media(min-width: 768px) {
+            .cart-page-container { padding: 40px 30px 120px 30px; }
+        }
+
+        .cart-brand-logo {
+            width: 120px;
+            height: auto;
+            object-fit: contain;
+            filter: none !important;
+            box-shadow: none !important;
+            image-rendering: -webkit-optimize-contrast;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .cart-items-fullscreen-box {
+            background: #08080c; border-radius: 14px; padding: 14px; width: 100%;
+            display: flex; flex-direction: column; gap: 10px;
+            max-height: 420px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gold-solid) transparent;
+        }
+        .cart-fullscreen-row { 
+            display: flex; align-items: center; justify-content: space-between; background: #12121a; padding: 12px; border-radius: 10px; gap: 12px; flex-wrap: wrap; 
+        }
+        .cart-fullscreen-img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; background: #000; flex-shrink: 0; }
+
+        .google-verify-btn {
+            background: var(--gold-gradient); color: #000000; font-weight: 800; font-size: 0.85rem; padding: 16px 20px; border-radius: 35px;
+            border: none; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(212,175,55,0.3); width: 100%; text-decoration: none; transition: 0.2s; text-align: center;
+        }
+        .google-verify-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(212,175,55,0.45); }
+
+        .dashboard-action-btn {
+            background: var(--gold-gradient); color: #000000; font-weight: 800; font-size: 0.82rem; padding: 14px 22px; border-radius: 30px;
+            border: none; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.4); width: 100%; transition: 0.2s;
+        }
+        .dashboard-action-btn:hover { transform: scale(1.02); }
+
+        .address-form-section {
+            display: none; background: #08080c; border-radius: 14px; padding: 20px; flex-direction: column; gap: 16px; border: 1px solid rgba(212,175,55,0.25);
+        }
+
+        .address-form-grid-2 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        @media(min-width: 576px) {
+            .address-form-grid-2 { grid-template-columns: 1fr 1fr; }
+        }
+        
+        .luxury-form-label {
+            font-size: 0.7rem; color: #ffffff !important; font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 4px;
+        }
+        .luxury-form-input {
+            background: #0d0d14 !important; border: none !important; 
+            padding: 12px 14px !important; border-radius: 10px !important; color: #ffffff !important; 
+            font-size: 0.8rem !important; font-family: var(--font-main) !important; width: 100% !important;
+            outline: none !important; text-transform: uppercase !important;
+        }
+
+        .gold-gradient-price {
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        #toastBox {
+            position: fixed; bottom: 30px; right: 20px; background: #1a1a24;
+            color: #ffffff; padding: 14px 20px;
+            border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.85); z-index: 9999999; display: none; font-size: 0.8rem; font-weight: 600;
+        }
+
+        #luxuryLoadingOverlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.96); z-index: 9999999; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+        }
+        .luxury-spinner-ring {
+            width: 55px; height: 55px; border: 3px solid rgba(212, 175, 55, 0.2); border-top: 3px solid var(--gold-solid);
+            border-radius: 50%; animation: spinLuxuryRing 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+        @keyframes spinLuxuryRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .luxury-loader-logo { width: 45px; height: auto; object-fit: contain; animation: pulseLogo 1.5s ease-in-out infinite; }
+        @keyframes pulseLogo { 0%, 100% { opacity: 0.4; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
+    </style>
+</head>
+<body>
+
+    <div id="toastBox"></div>
+
+    <div id="luxuryLoadingOverlay">
+        <img src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png" class="luxury-loader-logo" alt="Logo">
+        <div class="luxury-spinner-ring"></div>
+        <div style="font-size:0.72rem; font-weight:700; color:var(--gold-solid); letter-spacing: 2px;">SAVING SECURE ORDER...</div>
+    </div>
+
+    <div class="cart-page-container">
+        
+        <!-- টপ হেডার: লোগো, ব্যাক লিঙ্ক ও রিটেইল কার্ট টাইটেল -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:14px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:16px; text-align:center;">
+            <img src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png" alt="Rorraxy Logo" class="cart-brand-logo">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <a href="p.html" style="color:var(--gold-solid); text-decoration:none; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-arrow-left"></i> BACK TO PRODUCT
+                </a>
+                <h1 style="font-size:1.15rem; font-weight:700; color:#ffffff; text-align:center; flex:1; letter-spacing: 1px;">RETAIL CART</h1>
+                <div style="width: 110px;"></div>
+            </div>
+        </div>
+
+        <!-- কার্ট প্রোডাক্ট লিস্ট -->
+        <div id="cartFullscreenItemsBox" class="cart-items-fullscreen-box"></div>
+
+        <!-- মোট মূল্য বক্স -->
+        <div style="width:100%; background:#08080c; padding:16px 20px; border-radius:12px; display:flex; flex-direction:column; gap:6px; border:1px solid rgba(212,175,55,0.15);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-gray);">TOTAL QUANTITY: <span id="cartFullscreenTotalQty" style="color:var(--gold-solid);">0</span> UNITS</span>
+                <div style="text-align:right;">
+                    <div id="cartFullscreenTotalVal" class="gold-gradient-price" style="font-size:1.25rem;">$0.00</div>
+                    <div id="cartFullscreenLocalVal" style="font-size:0.72rem; color:var(--text-gray); font-weight:600; margin-top:2px;">🇧🇩 BDT 0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- গুগল ভেরিফিকেশন বাটন -->
+        <div id="googleAuthSection">
+            <button class="google-verify-btn" onclick="handleCartGoogleVerify()">
+                <i class="fa-brands fa-google" style="color:#000000; font-size: 1.05rem;"></i> CONTINUE & VERIFY WITH GOOGLE
+            </button>
+        </div>
+
+        <!-- শিপিং অ্যাড্রেস ফর্ম -->
+        <div id="customerCheckoutFormPanel" class="address-form-section">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:100%; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; text-align:center;">
+                <img id="verifiedUserPhoto" src="" style="width:45px; height:45px; border-radius:50%; border:2px solid var(--gold-solid);">
+                <h2 id="verifiedUserName" style="font-size:1rem; font-weight:700; color:#ffffff;"></h2>
+                <span id="verifiedUserEmailTop" style="font-size:0.68rem; color:var(--gold-solid); font-weight:600;"></span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--gold-solid);"><i class="fa-solid fa-location-dot"></i> SHIPPING ADDRESS</span>
+                <span id="autoDetectedCountryBadge" style="background:var(--gold-gradient); color:#000; font-size:0.65rem; font-weight:800; padding:4px 12px; border-radius:14px;">🇧🇩 BANGLADESH</span>
+            </div>
+            
+            <form id="shippingCheckoutForm" onsubmit="handleProceedToCheckoutPage(event)" style="display:flex; flex-direction:column; gap:12px;">
+                
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <label class="luxury-form-label">Full Name</label>
+                    <input type="text" id="chkFullName" class="luxury-form-input" placeholder="MD MASUDAR RAHMAN" required>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <label class="luxury-form-label">Street Address</label>
+                    <input type="text" id="chkStreet" class="luxury-form-input" placeholder="House 12, Road 5, Block C" required>
+                </div>
+
+                <div class="address-form-grid-2">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label class="luxury-form-label">City</label>
+                        <input type="text" id="chkCity" class="luxury-form-input" placeholder="Dhaka" required>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label class="luxury-form-label">Postal / Zip Code</label>
+                        <input type="text" id="chkPostal" class="luxury-form-input" placeholder="1212" required>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <label class="luxury-form-label">Phone Number</label>
+                    <input type="tel" id="chkPhone" class="luxury-form-input" placeholder="+8801XXXXXXXXX" required>
+                </div>
+
+                <div style="background:#12121a; padding:14px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:4px;">
+                    <div>
+                        <span style="font-size:0.68rem; color:var(--text-gray); display:block; font-weight:600;">TOTAL AMOUNT:</span>
+                        <span id="chkFinalCurrencyDisplay" class="gold-gradient-price" style="font-size:1.15rem;">$0.00</span>
+                    </div>
+                    <button type="submit" class="dashboard-action-btn" style="width:auto; min-width:180px;">
+                        PROCEED TO CHECKOUT <i class="fa-solid fa-arrow-right" style="color:#000;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        let detectedCountryName = "Bangladesh";
+
+        window.onload = function() {
+            renderCartFullscreenList();
+            detectGlobalLocation();
+            autoFillFromLocalStorage();
+            
+            let existingUser = localStorage.getItem('rorraxy_logged_user');
+            if(existingUser) {
+                try {
+                    let userData = JSON.parse(existingUser);
+                    if(userData && userData.email) {
+                        window.openCheckoutAndShippingForm(userData);
+                    }
+                } catch(e) {}
+            }
+        };
+
+        async function detectGlobalLocation() {
+            try {
+                let response = await fetch('https://ipapi.co/json/');
+                let data = await response.json();
+                detectedCountryName = data.country_name || "Bangladesh";
+                let badge = document.getElementById('autoDetectedCountryBadge');
+                if(badge) badge.innerText = `🇧🇩 ${detectedCountryName.toUpperCase()}`;
+            } catch(e) {}
+        }
+
+        function autoFillFromLocalStorage() {
+            let savedAddr = localStorage.getItem('rorraxy_last_shipping');
+            if(savedAddr) {
+                try {
+                    let addr = JSON.parse(savedAddr);
+                    if(addr.fullName) document.getElementById('chkFullName').value = addr.fullName;
+                    if(addr.street) document.getElementById('chkStreet').value = addr.street;
+                    if(addr.city) document.getElementById('chkCity').value = addr.city;
+                    if(addr.postal) document.getElementById('chkPostal').value = addr.postal;
+                    if(addr.phone) document.getElementById('chkPhone').value = addr.phone;
+                } catch(e) {}
+            }
+        }
+
+        window.openCheckoutAndShippingForm = function(user) {
+            document.getElementById('googleAuthSection').style.display = 'none';
+            document.getElementById('customerCheckoutFormPanel').style.display = 'flex';
+            
+            document.getElementById('verifiedUserName').innerText = user.name || "Valued Customer";
+            document.getElementById('verifiedUserEmailTop').innerText = user.email || "";
+            document.getElementById('verifiedUserPhoto').src = user.photoURL || "https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png";
+            
+            if(user.name && !document.getElementById('chkFullName').value) {
+                document.getElementById('chkFullName').value = user.name;
+            }
+
+            updateCheckoutTotalAmount();
+        }
+
+        function updateCheckoutTotalAmount() {
+            let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+            let totalAmt = cart.reduce((sum, item) => sum + (parseFloat(item.price.replace('$', '')) * item.qty), 0);
+            
+            let convertedVal = totalAmt * 120;
+            document.getElementById('chkFinalCurrencyDisplay').innerText = `$${totalAmt.toFixed(2)} (🇧🇩 BDT ${convertedVal.toLocaleString()})`;
+        }
+
+        function renderCartFullscreenList() {
+            let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+            let container = document.getElementById('cartFullscreenItemsBox');
+            let totalValEl = document.getElementById('cartFullscreenTotalVal');
+            let localValEl = document.getElementById('cartFullscreenLocalVal');
+            let totalQtyEl = document.getElementById('cartFullscreenTotalQty');
+
+            if(cart.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-gray); text-align:center; font-size:0.75rem; padding:20px;">YOUR RETAIL CART IS EMPTY.</div>';
+                totalValEl.innerText = "$0.00";
+                localValEl.innerText = "🇧🇩 BDT 0.00";
+                totalQtyEl.innerText = "0";
+                return;
+            }
+
+            let html = '', totalAmt = 0, totalQty = 0;
+            cart.forEach((item, index) => {
+                let priceNum = parseFloat(item.price.replace('$', ''));
+                let itemTotal = priceNum * item.qty;
+                totalAmt += itemTotal;
+                totalQty += item.qty;
+
+                html += `
+                <div class="cart-fullscreen-row">
+                    <img src="${item.img}" class="cart-fullscreen-img">
+                    <div style="flex:1; text-align:left; min-width:0;">
+                        <div style="font-size:0.75rem; font-weight:700; color:#ffffff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.title}</div>
+                        <div style="font-size:0.62rem; color:var(--gold-solid); font-weight:600; margin-top:2px;">SIZE / NOTE: ${item.size}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button onclick="changeCartItemQty(${index}, -1)" style="background:var(--gold-gradient); border:none; color:#000; font-weight:800; width:22px; height:22px; border-radius:50%; cursor:pointer;">-</button>
+                        <span style="font-size:0.8rem; font-weight:700; color:#ffffff;">${item.qty}</span>
+                        <button onclick="changeCartItemQty(${index}, 1)" style="background:var(--gold-gradient); border:none; color:#000; font-weight:800; width:22px; height:22px; border-radius:50%; cursor:pointer;">+</button>
+                    </div>
+                    <div class="gold-gradient-price" style="font-size:0.85rem;">
+                        $${itemTotal.toFixed(2)}
+                    </div>
+                    <button onclick="removeCartItem(${index})" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem; padding:4px;"><i class="fa-solid fa-trash-can"></i></button>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            totalValEl.innerText = `$${totalAmt.toFixed(2)}`;
+            let convertedVal = totalAmt * 120;
+            localValEl.innerText = `🇧🇩 BDT ${convertedVal.toLocaleString()}`;
+            totalQtyEl.innerText = totalQty;
+        }
+
+        function changeCartItemQty(index, val) {
+            let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+            cart[index].qty += val;
+            if(cart[index].qty < 1) cart[index].qty = 1;
+            localStorage.setItem('rorraxy_cart', JSON.stringify(cart));
+            renderCartFullscreenList();
+            updateCheckoutTotalAmount();
+        }
+
+        function removeCartItem(index) {
+            let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+            cart.splice(index, 1);
+            localStorage.setItem('rorraxy_cart', JSON.stringify(cart));
+            renderCartFullscreenList();
+            updateCheckoutTotalAmount();
+        }
+
+        function handleProceedToCheckoutPage(event) {
+            event.preventDefault();
+            
+            let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+            let userEmail = document.getElementById('verifiedUserEmailTop').innerText || "customer@rorraxy.com";
+
+            let orderPayload = {
+                email: userEmail,
+                fullName: document.getElementById('chkFullName').value,
+                country: detectedCountryName,
+                street: document.getElementById('chkStreet').value,
+                city: document.getElementById('chkCity').value,
+                postal: document.getElementById('chkPostal').value,
+                phone: document.getElementById('chkPhone').value,
+                items: cart,
+                timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem('rorraxy_checkout_data', JSON.stringify(orderPayload));
+            localStorage.setItem('rorraxy_last_shipping', JSON.stringify(orderPayload));
+
+            window.showToast('শিপিং তথ্য সংরক্ষিত হয়েছে! পেমেন্ট পেজে নেওয়া হচ্ছে...');
+
+            setTimeout(() => {
+                window.location.href = 'checkout.html';
+            }, 800);
+        }
+    </script>
+</body>
+</html>
