@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>rorraxy - B2C account dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev">
+
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1qyOXxZ8s2cJMEo66NDE4BdoxiC4hy_sG">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDokhLgGoe4Ib7oxUJ8zczLFWj0YJKk57Y",
+            authDomain: "rorraxy-fcb91.firebaseapp.com",
+            databaseURL: "https://rorraxy-fcb91-default-rtdb.firebaseio.com/",
+            projectId: "rorraxy-fcb91",
+            storageBucket: "rorraxy-fcb91.firebasestorage.app",
+            messagingSenderId: "880891394208",
+            appId: "1:880891394208:web:3bd8ccacf68ad5d53af1c5",
+            measurementId: "G-0XTRV9TPM3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.fetchFirebaseOrders = async function() {
+            try {
+                const dbRef = ref(db);
+                const snapshot = await get(child(dbRef, 'rorraxy_orders'));
+                if (snapshot.exists()) {
+                    let dataObj = snapshot.val();
+                    let ordersArray = Object.keys(dataObj).map(key => ({
+                        id: key,
+                        ...dataObj[key]
+                    }));
+                    return ordersArray;
+                }
+                return [];
+            } catch(err) {
+                console.error("Firebase Fetch Error:", err);
+                return [];
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --bg-retail: #000000;
+            --box-bg: #08080c;
+            --box-bg-alt: #12121a;
+            --box-active: #1a1a24;
+            --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --gold-solid: #d4af37;
+            --pink-accent: #ff2a85;
+            --text-white: #ffffff;
+            --text-gray: #b5b5be;
+            --border-gold: rgba(212, 175, 55, 0.25);
+            --font-main: 'Poppins', sans-serif;
+        }
+
+        * { box-sizing: border-box !important; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            width: 100%; max-width: 100%; background: var(--bg-retail) !important; color: var(--text-white);
+            font-family: var(--font-main); font-size: 13px; text-transform: uppercase !important;
+            -webkit-font-smoothing: antialiased; overflow-x: hidden !important; position: relative;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+
+        #toastBox {
+            position: fixed; bottom: 30px; right: 20px; background: var(--box-active);
+            color: var(--text-white); padding: 14px 20px; border: 1px solid var(--gold-solid);
+            border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.85); z-index: 9999999; display: none; font-size: 0.75rem; font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .dashboard-wrapper {
+            width: 100%; max-width: 1240px; margin: 0 auto; padding: 25px 20px;
+            display: flex; flex-direction: column; gap: 24px; flex: 1;
+        }
+
+        .dash-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--box-bg); border: 1px solid var(--border-gold);
+            padding: 22px 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            flex-wrap: wrap; gap: 16px;
+        }
+        .dash-brand {
+            display: flex; align-items: center; gap: 15px;
+        }
+        .dash-logo { width: 48px; height: auto; object-fit: contain; }
+        .dash-title h1 { font-size: 1.15rem; font-weight: 700; color: var(--gold-solid); letter-spacing: 1px; }
+        .dash-title span { font-size: 0.65rem; color: var(--text-gray); letter-spacing: 0.5px; }
+
+        .dash-user-badge {
+            display: flex; align-items: center; gap: 12px; background: var(--box-bg-alt);
+            padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(212,175,55,0.15);
+        }
+        .avatar-circle {
+            width: 36px; height: 36px; border-radius: 50%; background: var(--gold-gradient);
+            display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; font-size: 0.85rem;
+        }
+        .action-btn-link {
+            background: transparent; border: 1px solid var(--gold-solid); color: var(--gold-solid);
+            padding: 10px 18px; border-radius: 30px; font-weight: 700; font-size: 0.7rem; cursor: pointer;
+            display: flex; align-items: center; gap: 6px; transition: 0.2s; text-decoration: none;
+        }
+        .action-btn-link:hover { background: var(--gold-solid); color: #000; }
+
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px;
+        }
+        .stat-card {
+            background: var(--box-bg); border: 1px solid var(--border-gold); border-radius: 14px;
+            padding: 20px; display: flex; flex-direction: column; gap: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6); position: relative; overflow: hidden;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%;
+            background: var(--gold-gradient);
+        }
+        .stat-label { font-size: 0.68rem; color: var(--text-gray); font-weight: 600; letter-spacing: 0.5px; }
+        .stat-value { font-size: 1.35rem; font-weight: 700; color: #ffffff; letter-spacing: 0.5px; }
+        .stat-sub { font-size: 0.62rem; color: var(--gold-solid); font-weight: 500; display: flex; align-items: center; gap: 5px; }
+
+        .tab-nav {
+            display: flex; gap: 10px; background: var(--box-bg); padding: 10px;
+            border-radius: 14px; border: 1px solid var(--border-gold); overflow-x: auto;
+        }
+        .tab-btn {
+            background: var(--box-bg-alt); border: none; color: var(--text-gray); padding: 12px 20px;
+            border-radius: 10px; font-weight: 700; font-size: 0.72rem; cursor: pointer; transition: 0.2s;
+            white-space: nowrap; display: flex; align-items: center; gap: 8px;
+        }
+        .tab-btn.active { background: var(--gold-gradient); color: #000000; box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
+
+        .tab-content { display: none; flex-direction: column; gap: 18px; }
+        .tab-content.active { display: flex; }
+
+        .panel-box {
+            background: var(--box-bg); border: 1px solid var(--border-gold); border-radius: 16px;
+            padding: 24px; display: flex; flex-direction: column; gap: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+        }
+        .panel-heading {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px; flex-wrap: wrap; gap: 10px;
+        }
+        .panel-heading h2 { font-size: 0.95rem; font-weight: 700; color: var(--gold-solid); letter-spacing: 0.5px; }
+
+        .order-table-container { width: 100%; overflow-x: auto; }
+        table.luxury-table {
+            width: 100%; border-collapse: collapse; text-align: left; font-size: 0.72rem;
+        }
+        table.luxury-table th {
+            background: var(--box-bg-alt); color: var(--gold-solid); padding: 14px; font-weight: 700;
+            border-bottom: 1px solid rgba(212,175,55,0.2); letter-spacing: 0.5px;
+        }
+        table.luxury-table td {
+            padding: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-white);
+        }
+        table.luxury-table tr:hover td { background: rgba(212,175,55,0.03); }
+
+        .badge-status {
+            display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.62rem; font-weight: 700;
+        }
+        .badge-success { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+
+        .gold-btn {
+            background: var(--gold-gradient); color: #000000; font-weight: 800; font-size: 0.75rem;
+            padding: 12px 22px; border-radius: 30px; border: none; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.4); transition: 0.2s; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .gold-btn:hover { transform: scale(1.02); }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        .input-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-gray); }
+        .input-group input, .input-group select, .input-group textarea {
+            background: var(--box-bg-alt); border: 1px solid rgba(212,175,55,0.2); padding: 12px 16px;
+            border-radius: 10px; color: var(--text-white); font-family: var(--font-main); font-size: 0.75rem;
+            outline: none; text-transform: uppercase; resize: vertical;
+        }
+        .input-group input:focus, .input-group textarea:focus { border-color: var(--gold-solid); }
+
+        @media(max-width: 768px) {
+            .dash-header { flex-direction: column; align-items: flex-start; }
+            .dash-user-badge { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toastBox"></div>
+
+    <div class="dashboard-wrapper">
+        
+        <!-- Top Header Navigation -->
+        <div class="dash-header">
+            <div class="dash-brand">
+                <img src="https://lh3.googleusercontent.com/d/1qyOXxZ8s2cJMEo66NDE4BdoxiC4hy_sG" class="dash-logo" alt="Rorraxy Logo">
+                <div class="dash-title">
+                    <h1>Rorraxy B2B Account Dashboard</h1>
+                    <span>Secure Global Wholesale & Partner Portal</span>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div class="dash-user-badge">
+                    <div class="avatar-circle" id="userInitial">RX</div>
+                    <div style="display:flex; flex-direction:column;">
+                        <span id="userNameDisplay" style="font-size:0.75rem; font-weight:700; color:#fff;">GLOBAL PARTNER</span>
+                        <span id="userEmailDisplay" style="font-size:0.6rem; color:var(--text-gray); text-transform:lowercase;">partner@rorraxy.com</span>
+                    </div>
+                </div>
+                <a href="https://b2b.rorraxy.com" class="action-btn-link">
+                    <i class="fa-solid fa-store"></i> STORE
+                </a>
+                <button onclick="handleLogout()" class="action-btn-link" style="border-color:#ff4d4d; color:#ff4d4d;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> LOGOUT
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Summary Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">TOTAL SPENT (USD)</span>
+                <span class="stat-value" id="statTotalSpent">$0.00</span>
+                <span class="stat-sub"><i class="fa-solid fa-arrow-trend-up"></i> Verified B2B Turnover</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">ACTIVE WHOLESALE ORDERS</span>
+                <span class="stat-value" id="statActiveOrders">0</span>
+                <span class="stat-sub"><i class="fa-solid fa-box-open"></i> Processing & Dispatched</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">AVAILABLE CREDIT LIMIT</span>
+                <span class="stat-value" id="statCreditLimit">$50,000.00</span>
+                <span class="stat-sub"><i class="fa-solid fa-shield-halved"></i> Tier-1 Global Line</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">WALLET BALANCE</span>
+                <span class="stat-value" id="statWallet">$1,450.00</span>
+                <span class="stat-sub"><i class="fa-solid fa-wallet"></i> Instant Settlement</span>
+            </div>
+        </div>
+
+        <!-- Interactive Tabs Bar -->
+        <div class="tab-nav">
+            <button onclick="switchTab('orders', this)" class="tab-btn active">
+                <i class="fa-solid fa-receipt"></i> RECENT ORDERS
+            </button>
+            <button onclick="switchTab('invoices', this)" class="tab-btn">
+                <i class="fa-solid fa-file-invoice-dollar"></i> WHOLESALE INVOICES
+            </button>
+            <button onclick="switchTab('tickets', this)" class="tab-btn">
+                <i class="fa-solid fa-headset"></i> SUPPORT TICKETS
+            </button>
+            <button onclick="switchTab('settings', this)" class="tab-btn">
+                <i class="fa-solid fa-gear"></i> ACCOUNT SETTINGS
+            </button>
+        </div>
+
+        <!-- TAB 1: Recent Orders Panel -->
+        <div id="tab-orders" class="tab-content active">
+            <div class="panel-box">
+                <div class="panel-heading">
+                    <h2>RECENT WHOLESALE ORDERS & CHECKOUT HISTORY</h2>
+                    <button onclick="clearOrderHistory()" style="background:transparent; border:1px solid #ff4d4d; color:#ff4d4d; padding:6px 12px; border-radius:6px; font-size:0.65rem; font-weight:700; cursor:pointer;">CLEAR HISTORY</button>
+                </div>
+                <div class="order-table-container">
+                    <table class="luxury-table">
+                        <thead>
+                            <tr>
+                                <th>ORDER ID</th>
+                                <th>DATE & TIME</th>
+                                <th>ITEMS / DESC</th>
+                                <th>PAYMENT METHOD</th>
+                                <th>TOTAL AMOUNT</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Wholesale Invoices Panel -->
+        <div id="tab-invoices" class="tab-content">
+            <div class="panel-box">
+                <div class="panel-heading">
+                    <h2>OFFICIAL B2B INVOICES & TAX DOCUMENTS</h2>
+                    <span style="font-size:0.68rem; color:var(--text-gray);">VERIFIED BY RORRAXY GLOBAL AUDIT</span>
+                </div>
+                <div class="order-table-container">
+                    <table class="luxury-table">
+                        <thead>
+                            <tr>
+                                <th>INVOICE NO</th>
+                                <th>ISSUED DATE</th>
+                                <th>REF ORDER ID</th>
+                                <th>AMOUNT PAID</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Support Tickets Panel -->
+        <div id="tab-tickets" class="tab-content">
+            <div class="panel-box">
+                <div class="panel-heading">
+                    <h2>RAISE B2B SUPPORT & DISPATCH TICKET</h2>
+                    <span style="font-size:0.68rem; color:var(--text-gray);">24/7 DEDICATED PARTNER DESK</span>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>SUBJECT / INQUIRY TOPIC</label>
+                        <select id="ticketSubject">
+                            <option value="Shipment Tracking & Logistics">Shipment Tracking & Logistics</option>
+                            <option value="Wholesale Invoice & Tax Inquiry">Wholesale Invoice & Tax Inquiry</option>
+                            <option value="Credit Line & Payment Settlement">Credit Line & Payment Settlement</option>
+                            <option value="Custom Product Sourcing">Custom Product Sourcing</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>ORDER REF (OPTIONAL)</label>
+                        <input type="text" id="ticketOrderRef" placeholder="e.g. RX-88942">
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top:4px;">
+                    <label>DETAILED MESSAGE</label>
+                    <textarea id="ticketMessage" rows="4" placeholder="Describe your inquiry or support request here..."></textarea>
+                </div>
+                <div style="margin-top:10px;">
+                    <button onclick="submitSupportTicket()" class="gold-btn">
+                        <i class="fa-solid fa-paper-plane"></i> SUBMIT SUPPORT TICKET
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Settings Panel -->
+        <div id="tab-settings" class="tab-content">
+            <div class="panel-box">
+                <div class="panel-heading">
+                    <h2>COMPANY & PROFILE SETTINGS</h2>
+                    <span style="font-size:0.68rem; color:var(--text-gray);">UPDATE BUSINESS CREDENTIALS</span>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>COMPANY / PARTNER NAME</label>
+                        <input type="text" id="settingCompanyName" value="Rorraxy Global Enterprise">
+                    </div>
+                    <div class="input-group">
+                        <label>OFFICIAL EMAIL</label>
+                        <input type="email" id="settingEmail" value="partner@rorraxy.com">
+                    </div>
+                    <div class="input-group">
+                        <label>WHATSAPP / PHONE</label>
+                        <input type="text" id="settingPhone" value="+880 1800 000000">
+                    </div>
+                    <div class="input-group">
+                        <label>SHIPPING WAREHOUSE ADDRESS</label>
+                        <input type="text" id="settingAddress" value="Gulshan Avenue, Dhaka, Bangladesh">
+                    </div>
+                </div>
+                <div style="margin-top:10px;">
+                    <button onclick="saveProfileSettings()" class="gold-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> SAVE CHANGES
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        window.showToast = function(message, isError = false) {
+            const toast = document.getElementById('toastBox');
+            if(!toast) return;
+            toast.innerText = message;
+            toast.style.borderColor = isError ? '#ff4d4d' : 'var(--gold-solid)';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
+
+        window.switchTab = function(tabName, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('tab-' + tabName).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        window.onload = async function() {
+            await loadDashboardData();
+        };
+
+        async function loadDashboardData() {
+            let ordersList = [];
+            
+            if(window.fetchFirebaseOrders) {
+                let fbOrders = await window.fetchFirebaseOrders();
+                if(fbOrders && fbOrders.length > 0) {
+                    ordersList.push(...fbOrders);
+                }
+            }
+
+            let lastOrderStr = localStorage.getItem('rorraxy_last_order');
+            if(lastOrderStr) {
+                try {
+                    let parsed = JSON.parse(lastOrderStr);
+                    if(!ordersList.some(o => o.timestamp === parsed.timestamp)) {
+                        ordersList.push(parsed);
+                    }
+                } catch(e) {}
+            }
+
+            let checkoutData = localStorage.getItem('rorraxy_checkout_data');
+            if(checkoutData) {
+                try {
+                    let parsed = JSON.parse(checkoutData);
+                    if(!ordersList.some(o => o.timestamp === parsed.timestamp)) {
+                        ordersList.push(parsed);
+                    }
+                } catch(e) {}
+            }
+
+            if(ordersList.length === 0) {
+                ordersList = [
+                    {
+                        id: "RX-88942",
+                        timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
+                        paymentMethod: "Credit / Debit Card",
+                        items: [{ name: "Global Luxury Watch Collection (Batch A)", price: "$1,250.00", qty: 2 }],
+                        orderStatus: "Confirmed"
+                    },
+                    {
+                        id: "RX-88310",
+                        timestamp: new Date(Date.now() - 3600000 * 48).toISOString(),
+                        paymentMethod: "bKash / Nagad",
+                        items: [{ name: "Wholesale Silk Apparel Stock", price: "$450.00", qty: 5 }],
+                        orderStatus: "Dispatched"
+                    }
+                ];
+            }
+
+            let totalSpentUSD = 0;
+            let tbodyOrders = document.getElementById('ordersTableBody');
+            let tbodyInvoices = document.getElementById('invoicesTableBody');
+            tbodyOrders.innerHTML = "";
+            tbodyInvoices.innerHTML = "";
+
+            ordersList.forEach((ord, index) => {
+                let orderId = ord.id || ord.orderId || `RX-99${index + 10}`;
+                let dateStr = ord.timestamp ? new Date(ord.timestamp).toLocaleString() : "Recent";
+                let payMethod = ord.paymentMethod || "Credit / Debit Card";
+                let status = ord.orderStatus || "Confirmed";
+                
+                let itemDesc = "Wholesale Batch Item";
+                let itemTotal = 0;
+
+                if(ord.items && Array.isArray(ord.items)) {
+                    itemDesc = ord.items.map(i => `${i.qty || 1}x ${i.name || i.title || 'Product'}`).join(', ');
+                    itemTotal = ord.items.reduce((sum, item) => sum + (parseFloat((item.price || "0").replace('$', '')) * (item.qty || 1)), 0);
+                } else {
+                    itemTotal = 1250.00;
+                }
+
+                totalSpentUSD += itemTotal;
+                let bdtVal = itemTotal * 120;
+
+                tbodyOrders.innerHTML += `
+                    <tr>
+                        <td style="font-weight:700; color:var(--gold-solid);">${orderId}</td>
+                        <td>${dateStr}</td>
+                        <td style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${itemDesc}</td>
+                        <td>${payMethod}</td>
+                        <td style="font-weight:700;">$${itemTotal.toFixed(2)} (BDT ${bdtVal.toLocaleString()})</td>
+                        <td><span class="badge-status badge-success">${status}</span></td>
+                    </tr>
+                `;
+
+                tbodyInvoices.innerHTML += `
+                    <tr>
+                        <td style="font-weight:700; color:var(--gold-solid);">INV-${orderId}</td>
+                        <td>${dateStr}</td>
+                        <td>${orderId}</td>
+                        <td style="font-weight:700;">$${itemTotal.toFixed(2)}</td>
+                        <td>
+                            <button onclick="window.showToast('Downloading invoice PDF for ${orderId}...') " style="background:var(--box-bg-alt); border:1px solid var(--gold-solid); color:var(--gold-solid); padding:6px 12px; border-radius:6px; font-size:0.65rem; font-weight:700; cursor:pointer;">
+                                <i class="fa-solid fa-download"></i> PDF
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('statTotalSpent').innerText = `$${totalSpentUSD.toFixed(2)}`;
+            document.getElementById('statActiveOrders').innerText = ordersList.length;
+
+            let partnerName = localStorage.getItem('rorraxy_partner_name') || "Rorraxy Global Enterprise";
+            let partnerEmail = localStorage.getItem('rorraxy_partner_email') || "partner@rorraxy.com";
+            
+            document.getElementById('userNameDisplay').innerText = partnerName;
+            document.getElementById('userEmailDisplay').innerText = partnerEmail;
+            document.getElementById('userInitial').innerText = partnerName.substring(0, 2).toUpperCase();
+
+            document.getElementById('settingCompanyName').value = partnerName;
+            document.getElementById('settingEmail').value = partnerEmail;
+        }
+
+        window.clearOrderHistory = function() {
+            localStorage.removeItem('rorraxy_last_order');
+            localStorage.removeItem('rorraxy_checkout_data');
+            window.showToast('Local order history cleared successfully!');
+            loadDashboardData();
+        }
+
+        window.submitSupportTicket = function() {
+            let msg = document.getElementById('ticketMessage').value.trim();
+            if(!msg) {
+                window.showToast('দয়া করে আপনার মেসেজ লিখুন!', true);
+                return;
+            }
+            window.showToast('সাপোর্ট টিকিট সফলভাবে সাবমিট হয়েছে!');
+            document.getElementById('ticketMessage').value = '';
+        }
+
+        window.saveProfileSettings = function() {
+            let compName = document.getElementById('settingCompanyName').value;
+            let compEmail = document.getElementById('settingEmail').value;
+            
+            localStorage.setItem('rorraxy_partner_name', compName);
+            localStorage.setItem('rorraxy_partner_email', compEmail);
+
+            document.getElementById('userNameDisplay').innerText = compName;
+            document.getElementById('userEmailDisplay').innerText = compEmail;
+            document.getElementById('userInitial').innerText = compName.substring(0, 2).toUpperCase();
+
+            window.showToast('Profile settings updated successfully!');
+        }
+
+        window.handleLogout = function() {
+            localStorage.removeItem('rorraxy_checkout_data');
+            localStorage.removeItem('rorraxy_last_order');
+            window.showToast('Logged out successfully. Redirecting...');
+            setTimeout(() => {
+                window.location.href = 'https://b2b.rorraxy.com';
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
