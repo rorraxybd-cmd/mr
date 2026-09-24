@@ -69,7 +69,7 @@
                 console.error("Auth Error Code:", error.code);
                 console.error("Auth Error Message:", error.message);
                 hideLuxuryLoader();
-                window.showToast("ভেরিফিকেশন ব্যর্থ হয়েছে: " + error.message, true);
+                window.showToast("ভেরিফিকেশন ব্যর্থ হয়েছে: " + error.message, true);
             }
         };
 
@@ -118,12 +118,12 @@
             .cart-page-container { padding: 40px 30px 120px 30px; }
         }
 
+        /* লোগো একদম স্পষ্ট */
         .cart-brand-logo {
-            width: 120px;
+            width: 130px;
             height: auto;
             object-fit: contain;
-            filter: none !important;
-            box-shadow: none !important;
+            filter: drop-shadow(0 2px 8px rgba(212,175,55,0.25));
             image-rendering: -webkit-optimize-contrast;
             margin: 0 auto;
             display: block;
@@ -139,12 +139,13 @@
         }
         .cart-fullscreen-img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; background: #000; flex-shrink: 0; }
 
+        /* সাদা গুগল ভেরিফিকেশন বাটন */
         .google-verify-btn {
-            background: var(--gold-gradient); color: #000000; font-weight: 800; font-size: 0.85rem; padding: 16px 20px; border-radius: 35px;
-            border: none; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
-            box-shadow: 0 4px 20px rgba(212,175,55,0.3); width: 100%; text-decoration: none; transition: 0.2s; text-align: center;
+            background: #ffffff; color: #000000; font-weight: 700; font-size: 0.85rem; padding: 16px 20px; border-radius: 35px;
+            border: none; display: inline-flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255,255,255,0.15); width: 100%; text-decoration: none; transition: 0.2s; text-align: center;
         }
-        .google-verify-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(212,175,55,0.45); }
+        .google-verify-btn:hover { background: #f1f1f1; transform: translateY(-2px); box-shadow: 0 6px 25px rgba(255,255,255,0.3); }
 
         .dashboard-action-btn {
             background: var(--gold-gradient); color: #000000; font-weight: 800; font-size: 0.82rem; padding: 14px 22px; border-radius: 30px;
@@ -210,16 +211,18 @@
 
     <div class="cart-page-container">
         
-        <!-- টপ হেডার: লোগো, ব্যাক লিঙ্ক ও রিটেইল কার্ট টাইটেল -->
-        <div style="display:flex; flex-direction:column; align-items:center; gap:14px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:16px; text-align:center;">
+        <!-- টপ হেডার: লোগো এবং নেভিগেশন -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:16px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:16px; text-align:center;">
             <img src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/mr%20masudar%20logo%20(3).png" alt="Rorraxy Logo" class="cart-brand-logo">
             
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <a href="p.html" style="color:var(--gold-solid); text-decoration:none; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-                    <i class="fa-solid fa-arrow-left"></i> BACK TO PRODUCT
-                </a>
-                <h1 style="font-size:1.15rem; font-weight:700; color:#ffffff; text-align:center; flex:1; letter-spacing: 1px;">RETAIL CART</h1>
-                <div style="width: 110px;"></div>
+            <div style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; width:100%;">
+                <div style="text-align: left;">
+                    <a href="p.html" style="color:var(--gold-solid); text-decoration:none; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px;">
+                        <i class="fa-solid fa-arrow-left"></i> BACK
+                    </a>
+                </div>
+                <h1 style="font-size:1.05rem; font-weight:700; color:#ffffff; letter-spacing: 1px; text-align: center;">RETAIL CART</h1>
+                <div></div>
             </div>
         </div>
 
@@ -237,10 +240,11 @@
             </div>
         </div>
 
-        <!-- গুগল ভেরিফিকেশন বাটন -->
+        <!-- সাদা গুগল ভেরিফিকেশন বাটন ও গুগল লোগো -->
         <div id="googleAuthSection">
             <button class="google-verify-btn" onclick="handleCartGoogleVerify()">
-                <i class="fa-brands fa-google" style="color:#000000; font-size: 1.05rem;"></i> CONTINUE & VERIFY WITH GOOGLE
+                <i class="fa-brands fa-google" style="font-size: 1.1rem; background: conic-gradient(from -45deg, #ea4335 110deg, #4285f4 90deg 180deg, #34a853 180deg 270deg, #fbbc05 270deg) 0 0; -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i> 
+                CONTINUE & VERIFY WITH GOOGLE
             </button>
         </div>
 
