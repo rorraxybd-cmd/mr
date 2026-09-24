@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Global Checkout | rorraxy</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ফায়ারবেস ডেটা সেভ ও রিডাইরেক্ট লজিক -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDokhLgGoe4Ib7oxUJ8zczLFWj0YJKk57Y",
+            authDomain: "rorraxy-fcb91.firebaseapp.com",
+            databaseURL: "https://rorraxy-fcb91-default-rtdb.firebaseio.com/",
+            projectId: "rorraxy-fcb91",
+            storageBucket: "rorraxy-fcb91.firebasestorage.app",
+            messagingSenderId: "880891394208",
+            appId: "1:880891394208:web:3bd8ccacf68ad5d53af1c5",
+            measurementId: "G-0XTRV9TPM3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.finalizeAndConfirmOrder = function() {
+            let checkoutData = localStorage.getItem('rorraxy_checkout_data');
+            let orderPayload = {};
+
+            if(checkoutData) {
+                try {
+                    orderPayload = JSON.parse(checkoutData);
+                } catch(e) {}
+            }
+
+            orderPayload.paymentMethod = window.selectedPaymentType || "Credit / Debit Card";
+            orderPayload.timestamp = new Date().toISOString();
+            orderPayload.orderId = 'RRX-' + Math.floor(100000 + Math.random() * 900000);
+
+            localStorage.setItem('rorraxy_last_order', JSON.stringify(orderPayload));
+            localStorage.removeItem('rorraxy_checkout_data');
+            localStorage.removeItem('rorraxy_cart');
+
+            try {
+                const ordersRef = ref(db, 'rorraxy_orders');
+                const newOrderRef = push(ordersRef);
+                set(newOrderRef, orderPayload).catch(err => console.log(err));
+            } catch(err) {}
+
+            window.location.href = 'https://b.rorraxy.com/a';
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-body: #060609;
+            --card-bg: #101015;
+            --border-color: rgba(212, 175, 55, 0.2);
+            --gold-color: #d4af37;
+            /* আপনার ব্র্যান্ডের নির্দিষ্ট গোল্ডেন গ্রাডিয়েন্ট */
+            --gold-gradient: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%); 
+            --text-main: #f4f4f6;
+            --text-muted: #8c8c9a;
+            --font-family: 'Plus Jakarta Sans', sans-serif;
+            /* পেমেন্ট ব্র্যান্ড কালার */
+            --bkash-color: #E2136E;
+            --nagad-color: #F7931E;
+            --visa-color: #1A1F71;
+            --mastercard-color: #EB001B;
+            --amex-color: #007bc1;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .checkout-wrapper {
+            width: 100%;
+            max-width: 820px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* হেডার */
+        .checkout-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+
+        .brand-title h1 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            /* গোল্ডেন গ্রাডিয়েন্ট টেক্সট */
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .brand-title span {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.65rem;
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.06);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* গ্রিড লেআউট */
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkout-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .card-section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            /* গোল্ডেন গ্রাডিয়েন্ট টেক্সট */
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 8px;
+        }
+        
+        /* আইকনের জন্য গ্রাডিয়েন্ট ফিক্স */
+        .card-section-title i {
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* পেমেন্ট অপশন */
+        .payment-accordion-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .payment-method-item {
+            background: #15151b;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .payment-method-item.active {
+            border-color: var(--gold-color);
+            background: #1a1a22;
+        }
+
+        .payment-method-header {
+            padding: 11px 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .payment-method-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .payment-dropdown-content {
+            display: none;
+            padding: 0 13px 13px 13px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 2px;
+            padding-top: 10px;
+        }
+
+        .payment-method-item.active .payment-dropdown-content {
+            display: block;
+        }
+
+        .input-field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .input-field-group label {
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .input-field-group input {
+            background: #0a0a0e;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: #fff;
+            font-size: 0.75rem;
+            outline: none;
+        }
+
+        .input-field-group input:focus {
+            border-color: var(--gold-color);
+        }
+
+        /* সামারি */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .summary-row.total {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #fff;
+            border-top: 1px dashed rgba(255,255,255,0.08);
+            padding-top: 10px;
+            margin-top: 2px;
+        }
+
+        .summary-row.total span:last-child {
+            /* গোল্ডেন গ্রাডিয়েন্ট টেক্সট */
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: right;
+        }
+
+        /* প্রফেশনাল ও ক্লিন কনফার্ম বাটন */
+        .place-order-btn {
+            background: var(--gold-gradient);
+            color: #080809;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.6px;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-transform: uppercase;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .place-order-btn:hover {
+            opacity: 0.9;
+        }
+
+        .secure-footer-note {
+            text-align: center;
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .secure-footer-note i {
+             /* গোল্ডেন গ্রাডিয়েন্ট টেক্সট */
+             background: var(--gold-gradient);
+             -webkit-background-clip: text;
+             -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-wrapper">
+        
+        <!-- হেডার -->
+        <header class="checkout-header">
+            <div class="brand-box">
+                <img src="https://lh3.googleusercontent.com/d/1qyOXxZ8s2cJMEo66NDE4BdoxiC4hy_sG" class="brand-logo" alt="Logo">
+                <div class="brand-title">
+                    <h1>Rorraxy Global</h1>
+                    <span>Secure International Checkout</span>
+                </div>
+            </div>
+            <div class="security-badge">
+                <i class="fa-solid fa-shield-halved"></i> 256-BIT SSL
+            </div>
+        </header>
+
+        <!-- মেইন গ্রিড -->
+        <div class="checkout-grid">
+            
+            <!-- পেমেন্ট অপশন -->
+            <div class="checkout-card">
+                <div class="card-section-title">
+                    <i class="fa-regular fa-credit-card"></i> Select Payment Method
+                </div>
+
+                <div class="payment-accordion-group">
+                    
+                    <!-- কার্ড -->
+                    <div class="payment-method-item active" id="method-card" onclick="selectPaymentMethod('Credit / Debit Card', 'method-card')">
+                        <div class="payment-method-header">
+                            <div class="payment-method-title">
+                                <i class="fa-solid fa-credit-card" style="background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                                <span>Credit / Debit Card</span>
+                            </div>
+                            <div style="display:flex; gap:4px; font-size:0.95rem;">
+                                <!-- ব্র্যান্ড কালার -->
+                                <i class="fa-brands fa-cc-visa" style="color:var(--visa-color);"></i>
+                                <i class="fa-brands fa-cc-mastercard" style="color:var(--mastercard-color);"></i>
+                                <i class="fa-brands fa-cc-amex" style="color:var(--amex-color);"></i>
+                            </div>
+                        </div>
+                        <div class="payment-dropdown-content">
+                            <div class="input-field-group">
+                                <label>CARD NUMBER</label>
+                                <input type="text" placeholder="4111 2222 3333 4444" maxlength="19">
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-field-group">
+                                    <label>EXPIRY (MM/YY)</label>
+                                    <input type="text" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="input-field-group">
+                                    <label>CVV</label>
+                                    <input type="password" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- বিকাশ -->
+                    <div class="payment-method-item" id="method-bkash" onclick="selectPaymentMethod('bKash Payment', 'method-bkash')">
+                        <div class="payment-method-header">
+                            <div class="payment-method-title">
+                                <!-- ব্র্যান্ড কালার -->
+                                <i class="fa-solid fa-mobile-screen-button" style="color:var(--bkash-color);"></i>
+                                <span>bKash Mobile Banking</span>
+                            </div>
+                            <!-- ব্র্যান্ড কালার -->
+                            <span style="font-size:0.6rem; font-weight:700; color:#fff; background:var(--bkash-color); padding:2px 6px; border-radius:3px;">bKash</span>
+                        </div>
+                        <div class="payment-dropdown-content">
+                            <div class="input-field-group">
+                                <label>BKASH ACCOUNT NUMBER</label>
+                                <input type="text" placeholder="01XXXXXXXXX" maxlength="11">
+                            </div>
+                            <span style="font-size:0.6rem; color:var(--text-muted);">Verification code will be sent to your bKash number.</span>
+                        </div>
+                    </div>
+
+                    <!-- নগদ -->
+                    <div class="payment-method-item" id="method-nagad" onclick="selectPaymentMethod('Nagad Payment', 'method-nagad')">
+                        <div class="payment-method-header">
+                            <div class="payment-method-title">
+                                 <!-- ব্র্যান্ড কালার -->
+                                <i class="fa-solid fa-wallet" style="color:var(--nagad-color);"></i>
+                                <span>Nagad Mobile Banking</span>
+                            </div>
+                             <!-- ব্র্যান্ড কালার -->
+                            <span style="font-size:0.6rem; font-weight:700; color:#fff; background:var(--nagad-color); padding:2px 6px; border-radius:3px;">Nagad</span>
+                        </div>
+                        <div class="payment-dropdown-content">
+                            <div class="input-field-group">
+                                <label>NAGAD ACCOUNT NUMBER</label>
+                                <input type="text" placeholder="01XXXXXXXXX" maxlength="11">
+                            </div>
+                            <span style="font-size:0.6rem; color:var(--text-muted);">Secure automated gateway verification via Nagad.</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- অর্ডার সামারি -->
+            <div class="checkout-card" style="justify-content: space-between;">
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div class="card-section-title">
+                        <i class="fa-solid fa-receipt"></i> Order Summary
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Items Subtotal:</span>
+                        <span id="summarySubtotal">$0.00 USD</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Logistics & Handling:</span>
+                        <span style="color:#2ecc71; font-weight:600;">FREE</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Payable:</span>
+                        <span id="summaryTotalDisplay" style="font-size: 0.8rem;">$0.00 USD (BDT 0)</span>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+                    <button onclick="finalizeAndConfirmOrder()" class="place-order-btn">
+                        <i class="fa-solid fa-lock" style="color:#080809;"></i> CONFIRM PAYMENT
+                    </button>
+                    
+                    <div class="secure-footer-note">
+                        <i class="fa-solid fa-shield-halved"></i> Fully Encrypted & Secured Checkout
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        window.selectedPaymentType = "Credit / Debit Card";
+
+        window.onload = function() {
+            calculateTotalFromCartOrData();
+        };
+
+        function calculateTotalFromCartOrData() {
+            let checkoutData = localStorage.getItem('rorraxy_checkout_data');
+            let totalAmt = 0;
+
+            if(checkoutData) {
+                try {
+                    let parsed = JSON.parse(checkoutData);
+                    if(parsed.items && Array.isArray(parsed.items)) {
+                        totalAmt = parsed.items.reduce((sum, item) => sum + (parseFloat(String(item.price).replace('$', '')) * item.qty), 0);
+                    }
+                } catch(e) {}
+            }
+
+            if(totalAmt === 0) {
+                try {
+                    let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+                    totalAmt = cart.reduce((sum, item) => sum + (parseFloat(String(item.price).replace('$', '')) * item.qty), 0);
+                } catch(e) {}
+            }
+
+            let bdtVal = totalAmt * 120;
+            let formattedText = `$${totalAmt.toFixed(2)} USD (BDT ${bdtVal.toLocaleString()})`;
+            
+            document.getElementById('summarySubtotal').innerText = `$${totalAmt.toFixed(2)} USD`;
+            document.getElementById('summaryTotalDisplay').innerText = formattedText;
+        }
+
+        function selectPaymentMethod(method, elementId) {
+            window.selectedPaymentType = method;
+            document.querySelectorAll('.payment-method-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById(elementId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
