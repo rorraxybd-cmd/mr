@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>rorraxy - retail global e-commerce</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev">
+
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1qyOXxZ8s2cJMEo66NDE4BdoxiC4hy_sG">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- FIREBASE SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDokhLgGe4Ib7oxUJ8zczLFWj0YJKk57Y",
+            authDomain: "rorraxy-fcb91.firebaseapp.com",
+            projectId: "rorraxy-fcb91",
+            storageBucket: "rorraxy-fcb91.firebasestorage.app",
+            messagingSenderId: "880891394208",
+            appId: "1:880891394208:web:3bd8ccacf68ad5d53af1c5",
+            measurementId: "G-0XTRV9TPM3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.RorraxyDB = getFirestore(app);
+        window.RorraxyGetDocs = getDocs;
+        window.RorraxyCollection = collection;
+    </script>
+
+    <style>
+        :root {
+            --bg-retail: #030305;
+            --card-retail: #0e0e12;
+            --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --gold-solid: #d4af37;
+            --pink-love: #ff2a85;
+            --text-white: #ffffff;
+            --text-gray: #b5b5be;
+            --font-main: 'Poppins', sans-serif;
+        }
+
+        * { box-sizing: border-box !important; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            width: 100%; max-width: 100%; background: var(--bg-retail) !important; color: var(--text-white);
+            font-family: var(--font-main); font-size: 14px; text-transform: uppercase !important;
+            -webkit-font-smoothing: antialiased; overflow-x: hidden !important; position: relative;
+        }
+
+        body { padding-bottom: 90px; }
+
+        .ecommerce-main-wrapper {
+            width: 100%; max-width: 1320px; margin: 0 auto; padding: 16px 10px 60px 10px;
+            display: flex; flex-direction: column; gap: 16px; overflow-x: hidden;
+        }
+        @media(min-width: 768px) {
+            .ecommerce-main-wrapper { padding: 35px 30px 80px 30px; gap: 28px; }
+        }
+
+        .product-details-clean-section { 
+            width: 100%; display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start;
+        }
+        @media(min-width: 950px) {
+            .product-details-clean-section { grid-template-columns: 1.15fr 0.85fr; gap: 40px; }
+        }
+
+        .product-left-col { width: 100%; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+        .media-viewport { 
+            width: 100%; position: relative; border-radius: 12px; overflow: hidden; background: #000; 
+            display: flex; align-items: center; justify-content: center; min-height: 280px; box-shadow: 0 10px 30px rgba(0,0,0,0.85); 
+        }
+        @media(min-width: 768px) { .media-viewport { min-height: 480px; } }
+        
+        .main-media-element { width: 100%; height: auto; max-height: 480px; object-fit: contain; display: block; background: #000; }
+
+        .thumbnail-slider-wrapper { position: relative; width: 100%; display: flex; align-items: center; overflow: hidden; }
+        .thumbnail-strip { display: flex; gap: 8px; padding: 4px 0; overflow-x: auto; width: 100%; scrollbar-width: thin; scrollbar-color: var(--gold-solid) transparent; }
+        .thumb-item { 
+            width: 55px; height: 55px; border-radius: 8px; overflow: hidden; cursor: pointer; flex-shrink: 0; 
+            background: #000; border: 2px solid rgba(255,255,255,0.15); transition: 0.25s; 
+        }
+        .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+        .thumb-item.active { border-color: var(--gold-solid); box-shadow: 0 0 10px rgba(212,175,55,0.8); }
+
+        .product-right-col { display: flex; flex-direction: column; gap: 12px; width: 100%; min-width: 0; }
+
+        .product-title-restricted { 
+            font-size: 1.15rem; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; line-height: 1.35; 
+            width: 100%; word-break: break-word; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        @media(min-width: 768px) { .product-title-restricted { font-size: 1.6rem; } }
+
+        /* ব্র্যাকেট ছাড়া ক্লিন ও প্রিমিয়াম স্টক ও শিপিং স্ট্যাটাস বার */
+        .stock-shipping-banner {
+            background: #0c0c12; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 16px;
+            display: flex; flex-direction: column; gap: 6px; width: 100%;
+        }
+        .free-shipping-text {
+            font-size: 0.75rem; font-weight: 700; background: var(--gold-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 6px;
+        }
+        .in-stock-clean-badge {
+            font-size: 0.72rem; font-weight: 700; color: #2ecc71; display: flex; align-items: center; gap: 6px; text-transform: uppercase;
+        }
+        .in-stock-clean-badge::before {
+            content: ""; width: 7px; height: 7px; background: #2ecc71; border-radius: 50%; display: inline-block;
+            box-shadow: 0 0 8px #2ecc71;
+        }
+
+        /* প্রাইস ও ডিসকাউন্ট কার্ড */
+        .price-discount-card {
+            background: #0c0c12; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; width: 100%;
+        }
+        .price-left-stack { display: flex; flex-direction: column; gap: 2px; }
+        .current-main-price {
+            font-size: 1.4rem; font-weight: 800; background: var(--gold-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.2;
+        }
+        .old-crossed-price {
+            font-size: 0.8rem; font-weight: 600; color: #7f8c8d; text-decoration: line-through;
+        }
+
+        .price-right-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+        .int-discount-badge {
+            background: #ff2a85; color: #ffffff; font-size: 0.65rem; font-weight: 800; padding: 4px 10px;
+            border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 10px rgba(255,42,133,0.4);
+        }
+        .bd-discount-pill {
+            background: #14141f; border: 1px solid rgba(212,175,55,0.2); color: var(--gold-solid);
+            font-size: 0.68rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;
+        }
+
+        /* রিটেইল কোয়ান্টিটি ঘর */
+        .retail-qty-section {
+            display: flex; flex-direction: column; gap: 6px; background: #0c0c12; padding: 12px 16px; border-radius: 12px; width: 100%;
+        }
+        .qty-label-mini { font-size: 0.68rem; font-weight: 700; color: var(--gold-solid); text-align: center; }
+        .qty-controls-flex { display: flex; align-items: center; justify-content: center; gap: 18px; }
+        .qty-btn-ch { background: var(--gold-gradient); border: none; color: #000; font-size: 0.9rem; font-weight: 800; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .qty-num-input { font-size: 1rem; font-weight: 700; color: #ffffff; width: 65px; text-align: center; background: transparent; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; outline: none; padding: 2px 0; }
+
+        .seller-chat-full-btn {
+            background: #0c0c12; border: 1px solid rgba(212,175,55,0.3); color: #ffffff;
+            font-size: 0.72rem; font-weight: 700; padding: 12px 16px; border-radius: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; width: 100%;
+        }
+        .seller-chat-full-btn:hover { border-color: var(--gold-solid); background: #12121c; }
+
+        .product-info-section-box {
+            display: flex; flex-direction: column; gap: 6px; background: #0c0c12; padding: 14px 16px; 
+            border-radius: 12px; width: 100%;
+        }
+        .section-box-title { font-size: 0.7rem; font-weight: 700; color: var(--gold-solid); display: flex; align-items: center; gap: 6px; }
+        .standard-description-box { font-size: 0.72rem; color: var(--text-gray); line-height: 1.5; text-transform: none !important; word-break: break-word; }
+
+        .custom-note-section-box {
+            display: flex; flex-direction: column; gap: 8px; background: #0c0c12; padding: 14px 16px; 
+            border-radius: 12px; width: 100%;
+        }
+        .custom-input-group { display: flex; gap: 8px; align-items: center; width: 100%; }
+        .custom-note-input { 
+            flex: 1; min-width: 0; background: #14141f; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; 
+            color: #ffffff; font-size: 0.72rem; outline: none; font-family: var(--font-main); text-transform: uppercase; 
+        }
+        .custom-save-btn {
+            background: var(--gold-gradient); color: #000; border: none; font-weight: 800; font-size: 0.7rem; 
+            padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap;
+        }
+        .custom-save-btn.saved-success { background: #28a745 !important; color: #fff !important; }
+
+        /* মোবাইল ফ্রেন্ডলি পিন্টারেস্ট স্টাইল ম্যাসনরি গ্রিড (কোনো সাইড ওভারফ্লো বা ভাঙবে না) */
+        .related-products-section {
+            width: 100%; margin-top: 10px; background: #0c0c12; padding: 14px; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 12px; overflow: hidden;
+        }
+        .feed-pinterest-masonry {
+            column-count: 2; column-gap: 8px; width: 100%; box-sizing: border-box;
+        }
+        @media (min-width: 768px) {
+            .feed-pinterest-masonry { column-count: 4; column-gap: 16px; }
+        }
+        @media (min-width: 1100px) {
+            .feed-pinterest-masonry { column-count: 5; column-gap: 16px; }
+        }
+
+        .product-card {
+            break-inside: avoid; margin-bottom: 8px; background: var(--card-retail); border-radius: 8px; overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: inline-block; width: 100%; max-width: 100%;
+            border: 1px solid rgba(255,255,255,0.06); position: relative; transition: 0.2s; box-sizing: border-box;
+        }
+        .product-card:hover { border-color: rgba(212,175,55,0.4); }
+
+        .product-media-box { position: relative; width: 100%; cursor: pointer; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .product-media-box img { width: 100%; height: auto; object-fit: contain; display: block; background: #000; }
+        
+        .card-footer-actions { 
+            display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; 
+            background: #000000 !important; border-top: 1px solid rgba(212,175,55,0.15); gap: 4px; 
+        }
+        .product-price-tag { font-size: 0.72rem; font-weight: 700; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .card-sub-actions { display: flex; align-items: center; gap: 8px; justify-content: center; }
+        
+        .love-action { display: flex; align-items: center; gap: 3px; cursor: pointer; font-size: 0.68rem; font-weight: 600; color: #ffffff !important; }
+        .love-action i { color: var(--pink-love); transition: 0.3s; }
+        .love-action.gold-active { background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .love-action.gold-active i { background: var(--gold-gradient) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
+        
+        .share-action-btn { background: none; border: none; font-size: 0.68rem; font-weight: 600; cursor: pointer; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; }
+
+        .inline-card-share-popup {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 8, 12, 0.96); backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); z-index: 100;
+            flex-direction: column; align-items: center; justify-content: center; padding: 8px; box-sizing: border-box;
+        }
+        .glass-popup-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 6px; }
+        .glass-popup-title { font-size: 0.62rem; font-weight: 700; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass-close-btn { background: none; border: none; color: #fff; font-size: 0.7rem; cursor: pointer; }
+        
+        .glass-share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 100%; margin-bottom: 6px; }
+        .glass-opt-btn {
+            background: rgba(20, 20, 26, 0.95); border: 1px solid rgba(212,175,55,0.25);
+            border-radius: 6px; padding: 5px 2px; display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; color: #fff; font-size: 0.45rem; text-transform: uppercase; transition: 0.2s; gap: 2px;
+        }
+        .glass-opt-btn i { font-size: 0.8rem; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass-opt-btn:hover { border-color: var(--gold-solid); background: #181822; }
+        
+        .glass-copy-row { display: flex; gap: 4px; width: 100%; }
+        .glass-copy-input { background: rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.1); padding: 4px 6px; border-radius: 6px; color: #fff; font-size: 0.52rem; width: 100%; outline: none; }
+        .glass-copy-btn { background: var(--gold-gradient); border: none; color: #000; font-weight: 700; font-size: 0.52rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+
+        /* ফুটার বার */
+        .fixed-bottom-checkout-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(5,5,8,0.98);
+            backdrop-filter: blur(25px); padding: 8px 12px; display: flex; justify-content: space-around; align-items: center; z-index: 5000; box-shadow: 0 -4px 25px rgba(0,0,0,0.95);
+        }
+        @media(min-width: 768px) { .fixed-bottom-checkout-bar { justify-content: center; gap: 35px; padding: 12px 30px; } }
+        
+        .footer-menu-item { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-decoration: none; cursor: pointer; gap: 3px; background: transparent !important; 
+            border: none !important; padding: 4px 8px; transition: 0.2s; white-space: nowrap;
+        }
+        .footer-menu-icon { font-size: 1.15rem; color: var(--gold-solid); }
+        .footer-menu-label { font-size: 0.58rem; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
+
+        .footer-menu-item.order-now-highlight {
+            background: var(--gold-gradient) !important; border-radius: 10px !important; padding: 8px 16px !important;
+        }
+        .footer-menu-item.order-now-highlight .footer-menu-label { color: #000000 !important; font-size: 0.68rem; font-weight: 800; }
+
+        .footer-cart-icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
+        .footer-cart-badge {
+            position: absolute; top: -6px; right: -10px; background: var(--pink-love); color: #ffffff;
+            font-size: 0.55rem; font-weight: 700; width: 16px; height: 16px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(255,42,133,0.9);
+        }
+
+        #toastBox {
+            position: fixed; bottom: 75px; right: 20px; background: #14141f; border: 1px solid var(--gold-solid);
+            color: #ffffff; padding: 10px 16px;
+            border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.85); z-index: 9999999; display: none; font-size: 0.75rem; font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toastBox"></div>
+
+    <div class="ecommerce-main-wrapper" id="mainStoreContainer">
+        
+        <div class="product-details-clean-section" id="productDetailsViewSection">
+            <!-- বাম দিক: মিডিয়া ভিউপোর্ট ও থাম্বনেইল -->
+            <div class="product-left-col">
+                <div class="media-viewport" id="mediaViewportContainer">
+                    <img id="mainDisplayMediaElement" src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(1).jpg" class="main-media-element" alt="Product">
+                </div>
+
+                <div class="thumbnail-slider-wrapper">
+                    <div class="thumbnail-strip" id="productThumbnailsStrip">
+                        <div class="thumb-item active" onclick="switchProductByIndex(0)">
+                            <img src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(1).jpg" alt="Thumb 1">
+                        </div>
+                        <div class="thumb-item" onclick="switchProductByIndex(1)">
+                            <img src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(2).jpg" alt="Thumb 2">
+                        </div>
+                        <div class="thumb-item" onclick="switchProductByIndex(2)">
+                            <img src="https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(3).jpg" alt="Thumb 3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ডান দিক: টাইটেল, স্টক/শিপিং, প্রাইস/ডিসকাউন্ট, কোয়ান্টিটি, চ্যাট ও কাস্টম নোট -->
+            <div class="product-right-col">
+                <h1 class="product-title-restricted" id="activeProductTitleHeading">RORRAXY LUXURY BRACELET GOLD EDITION</h1>
+                
+                <!-- ব্র্যাকেট ছাড়া সুন্দর ও ক্লিন স্ট্যাটাস বার -->
+                <div class="stock-shipping-banner">
+                    <span class="free-shipping-text"><i class="fa-solid fa-truck-fast"></i> FREE GLOBAL SHIPPING</span>
+                    <span class="in-stock-clean-badge">IN STOCK 45 UNITS AVAILABLE</span>
+                </div>
+
+                <!-- প্রাইস ও ডিসকাউন্ট কার্ড -->
+                <div class="price-discount-card">
+                    <div class="price-left-stack">
+                        <div class="current-main-price" id="activeProductPriceTag">$100.00</div>
+                        <div class="old-crossed-price" id="activeProductOldPriceTag">$180.00</div>
+                    </div>
+                    <div class="price-right-stack">
+                        <span class="int-discount-badge"><i class="fa-solid fa-tag"></i> 45% INT. OFF</span>
+                        <span class="bd-discount-pill"><i class="fa-solid fa-bangladesh-taka-sign" style="font-size:0.55rem;"></i> BD BDT 12,000 (45% OFF)</span>
+                    </div>
+                </div>
+
+                <!-- রিটেইল কোয়ান্টিটি ঘর -->
+                <div class="retail-qty-section">
+                    <span class="qty-label-mini">QUANTITY</span>
+                    <div class="qty-controls-flex">
+                        <button class="qty-btn-ch" onclick="modifyQuantity(-1)">-</button>
+                        <input type="number" id="itemQtyInputVal" class="qty-num-input" value="1" min="1" oninput="manualQuantityInput(this)">
+                        <button class="qty-btn-ch" onclick="modifyQuantity(1)">+</button>
+                    </div>
+                </div>
+
+                <!-- সেলার চ্যাট বাটন -->
+                <div>
+                    <button class="seller-chat-full-btn" onclick="toggleChatModal()">
+                        <span>CHAT WITH SELLER</span>
+                    </button>
+                </div>
+
+                <div class="product-info-section-box">
+                    <span class="section-box-title"><i class="fa-solid fa-circle-info"></i> PRODUCT INFORMATION</span>
+                    <div class="standard-description-box" id="unlimitedDescriptionContent">
+                        Crafted with precision engineering and high-grade sustainable materials for global retail standards. Enjoy absolute elegance and durability with reliable worldwide retail fulfillment.
+                    </div>
+                </div>
+
+                <div class="custom-note-section-box">
+                    <span class="section-box-title"><i class="fa-solid fa-pen-to-square"></i> CUSTOM SIZE / NOTE</span>
+                    <div class="custom-input-group">
+                        <input type="text" id="customSizeInputField" class="custom-note-input" placeholder="ENTER CUSTOM SIZE / NOTE..." value="" autocomplete="off">
+                        <button type="button" class="custom-save-btn" id="customSaveBtnElement" onclick="saveCustomSizeNote()">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- রিলেটেড প্রোডাক্টস সেকশন (মোবাইল ফ্রেন্ডলি পিন্টারেস্ট ম্যাসনরি গ্রিড) -->
+        <div class="related-products-section">
+            <span class="section-box-title"><i class="fa-solid fa-box-archive"></i> RELATED PRODUCTS</span>
+            <div class="feed-pinterest-masonry" id="relatedProductsGridContainer">
+                <!-- ডায়নামিক পিন্টারেস্ট স্টাইল কার্ডস এখানে রেন্ডার হবে -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ফুটার বার (মূল ডোমেইন rorraxy.com এবং rorraxy.com/a সহ) -->
+    <div class="fixed-bottom-checkout-bar">
+        <a href="https://rorraxy.com/" class="footer-menu-item">
+            <i class="fa-solid fa-house footer-menu-icon"></i>
+            <span class="footer-menu-label">HOME</span>
+        </a>
+
+        <div class="footer-menu-item order-now-highlight" id="orderNowMainBtn" onclick="executeOrderNow(event)">
+            <span class="footer-menu-label">ORDER NOW</span>
+        </div>
+
+        <a href="https://rorraxy.com/a" class="footer-menu-item">
+            <i class="fa-solid fa-user footer-menu-icon"></i>
+            <span class="footer-menu-label">YOU</span>
+        </a>
+
+        <a href="j.html" class="footer-menu-item" id="footerCartMenuBtn">
+            <div class="footer-cart-icon-wrapper">
+                <i class="fa-solid fa-cart-shopping footer-menu-icon"></i>
+                <span class="footer-cart-badge" id="footerCartItemCountBadge">0</span>
+            </div>
+            <span class="footer-menu-label">CART</span>
+        </a>
+    </div>
+
+    <!-- চ্যাট মোডাল -->
+    <div id="chatModalOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; padding:12px;" onclick="if(event.target===this) toggleChatModal()">
+        <div style="background:#0c0c12; border-radius:16px; padding:16px; max-width:400px; width:100%; display:flex; flex-direction:column; gap:10px; border:1px solid rgba(212,175,55,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--gold-solid);">SELLER CHAT SUPPORT</span>
+                <button onclick="toggleChatModal()" style="background:none; border:none; color:var(--gold-solid); font-size:1.15rem; cursor:pointer;">&times;</button>
+            </div>
+            <div id="chatMessagesContainer" style="background:#14141f; border-radius:10px; padding:10px; height:150px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                <div style="background:#1c1c2b; padding:8px 10px; border-radius:6px; font-size:0.68rem; color:#ffffff; max-width:85%;">
+                    Welcome! How can we assist you with your retail order today?
+                </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="chatMessageInput" placeholder="TYPE MESSAGE..." style="flex:1; min-width:0; background:#14141f; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 10px; color:#ffffff; font-size:0.68rem; outline:none;">
+                <button onclick="sendChatMessage()" style="background:var(--gold-gradient); color:#000; border:none; padding:0 12px; border-radius:8px; font-weight:800; font-size:0.68rem; cursor:pointer;">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const demoProductsDatabase = [
+            {
+                productId: "DEMO-001",
+                title: "RORRAXY LUXURY BRACELET GOLD EDITION",
+                price: 100.00,
+                oldPrice: 180.00,
+                likes: 582,
+                img: "https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(1).jpg",
+                sellerId: "SELLER-MASUD-99",
+                desc: "Crafted with precision engineering and high-grade sustainable materials for global retail standards."
+            },
+            {
+                productId: "DEMO-002",
+                title: "RORRAXY ELITE WOODEN LAMP",
+                price: 120.00,
+                oldPrice: 210.00,
+                likes: 340,
+                img: "https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(2).jpg",
+                sellerId: "SELLER-MASUD-99",
+                desc: "Premium handcrafted wooden lamp designed for luxury home decor and global retail markets."
+            },
+            {
+                productId: "DEMO-003",
+                title: "RORRAXY DESIGNER ART PIECE",
+                price: 150.00,
+                oldPrice: 270.00,
+                likes: 410,
+                img: "https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(3).jpg",
+                sellerId: "SELLER-MASUD-99",
+                desc: "Sophisticated art piece featuring exceptional craftsmanship and premium materials."
+            }
+        ];
+
+        let activeProductsDatabase = [];
+        let currentIndex = 0;
+        let currentUnitBasePrice = 100.00;
+        let currentItemQuantity = 1;
+        let activeMediaSource = "";
+        let activeProductTitle = "";
+        let activeProductId = "";
+        let activeSellerId = "";
+        let savedCustomNote = "";
+
+        window.onload = async function() {
+            await fetchProductsFromFirebaseOrDemo();
+            updateCartBadgeCount();
+        };
+
+        async function fetchProductsFromFirebaseOrDemo() {
+            try {
+                if (window.RorraxyDB && window.RorraxyCollection && window.RorraxyGetDocs) {
+                    const querySnapshot = await window.RorraxyGetDocs(window.RorraxyCollection(window.RorraxyDB, "products"));
+                    let firebaseProducts = [];
+                    querySnapshot.forEach((doc) => {
+                        let data = doc.data();
+                        firebaseProducts.push({
+                            productId: doc.id,
+                            title: data.title || "UNTITLED PRODUCT",
+                            price: parseFloat(data.price) || 100.00,
+                            oldPrice: parseFloat(data.oldPrice) || 180.00,
+                            likes: parseInt(data.likes) || 100,
+                            img: data.img || data.image || "https://pub-508ef1e45bab487aadde85a1dba202c4.r2.dev/rorraxyfree/rorraxy%201%20file/rorraxy%20(1).jpg",
+                            sellerId: data.sellerId || "SELLER-GENERAL",
+                            desc: data.desc || data.description || "No description available."
+                        });
+                    });
+
+                    if (firebaseProducts.length > 0) {
+                        activeProductsDatabase = [...firebaseProducts, ...demoProductsDatabase];
+                    } else {
+                        activeProductsDatabase = demoProductsDatabase;
+                    }
+                } else {
+                    activeProductsDatabase = demoProductsDatabase;
+                }
+            } catch (error) {
+                console.error("Firebase fetch error:", error);
+                activeProductsDatabase = demoProductsDatabase;
+            }
+
+            loadProductData(0);
+        }
+
+        function loadProductData(index) {
+            currentIndex = index;
+            let prod = activeProductsDatabase[index];
+            activeProductId = prod.productId;
+            activeProductTitle = prod.title.length > 55 ? prod.title.substring(0, 55).trim() : prod.title;
+            currentUnitBasePrice = prod.price;
+            activeMediaSource = prod.img;
+            activeSellerId = prod.sellerId;
+
+            document.getElementById('mainDisplayMediaElement').src = prod.img;
+            document.getElementById('activeProductTitleHeading').innerText = activeProductTitle;
+            document.getElementById('activeProductPriceTag').innerText = `$${prod.price.toFixed(2)}`;
+            document.getElementById('activeProductOldPriceTag').innerText = `$${(prod.oldPrice || prod.price * 1.8).toFixed(2)}`;
+            document.getElementById('unlimitedDescriptionContent').innerText = prod.desc;
+
+            document.querySelectorAll('.thumb-item').forEach((t, i) => {
+                if(i === index) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+
+            renderRelatedProducts();
+        }
+
+        function switchProductByIndex(index) {
+            loadProductData(index);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleLove(el, countVal) {
+            el.classList.toggle('gold-active');
+            let countSpan = el.querySelector('.love-count');
+            let current = parseInt(countSpan.innerText);
+            if (el.classList.contains('gold-active')) {
+                countSpan.innerText = current + 1;
+                showToast('পণ্যটি লাভ/লাইক করা হয়েছে!');
+            } else {
+                countSpan.innerText = current - 1;
+                showToast('লাইক উঠিয়ে নেওয়া হয়েছে।');
+            }
+        }
+
+        function openInlineShare(btn) {
+            let card = btn.closest('.product-card');
+            let popup = card.querySelector('.inline-card-share-popup');
+            popup.style.display = 'flex';
+        }
+
+        function closeInlineShare(btn) {
+            let popup = btn.closest('.inline-card-share-popup');
+            popup.style.display = 'none';
+        }
+
+        function shareToSocial(btn, platform) {
+            let card = btn.closest('.product-card');
+            let urlInput = card.querySelector('.glass-copy-input');
+            let shareUrl = urlInput ? urlInput.value : window.location.href;
+            
+            if (platform === 'whatsapp') {
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareUrl)}`, '_blank');
+            } else if (platform === 'telegram') {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}`, '_blank');
+            } else if (platform === 'facebook') {
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+            } else {
+                navigator.clipboard.writeText(shareUrl);
+                showToast('লিংক কপি করা হয়েছে!');
+            }
+            closeInlineShare(btn);
+        }
+
+        function copyLinkDirectSilent(btn) {
+            let card = btn.closest('.product-card');
+            let input = card.querySelector('.glass-copy-input');
+            if(input) {
+                navigator.clipboard.writeText(input.value);
+                showToast('প্রোডাক্ট লিংক সফলভাবে কপি হয়েছে!');
+                closeInlineShare(btn);
+            }
+        }
+
+        function renderRelatedProducts() {
+            const container = document.getElementById('relatedProductsGridContainer');
+            if(!container) return;
+
+            const filtered = activeProductsDatabase.filter(item => item.productId !== activeProductId).slice(0, 20);
+
+            let html = '';
+            if(filtered.length > 0) {
+                filtered.forEach(item => {
+                    let originalIdx = activeProductsDatabase.findIndex(p => p.productId === item.productId);
+                    
+                    html += `
+                        <div class="product-card" data-product-id="${item.productId}">
+                            <div class="product-media-box" onclick="switchProductByIndex(${originalIdx})">
+                                <img src="${item.img}" alt="${item.title}" loading="lazy">
+                            </div>
+                            <div class="card-footer-actions">
+                                <span class="product-price-tag">$${item.price.toFixed(2)}</span>
+                                <div class="card-sub-actions">
+                                    <div class="love-action card-love-btn" onclick="toggleLove(this)">
+                                        <i class="fa-solid fa-heart"></i> <span class="love-count">${item.likes}</span>
+                                    </div>
+                                    <button class="share-action-btn" onclick="openInlineShare(this)">
+                                        <i class="fa-solid fa-share-nodes"></i> Share
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="inline-card-share-popup">
+                                <div class="glass-popup-header">
+                                    <span class="glass-popup-title">SHARE</span>
+                                    <button class="glass-close-btn" onclick="closeInlineShare(this)"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div class="glass-share-grid">
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'whatsapp')"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'messenger')"><i class="fa-brands fa-facebook-messenger"></i><span>Messenger</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'telegram')"><i class="fa-brands fa-telegram"></i><span>Telegram</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'twitter')"><i class="fa-brands fa-x-twitter"></i><span>Twitter</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'linkedin')"><i class="fa-brands fa-linkedin-in"></i><span>LinkedIn</span></div>
+                                    <div class="glass-opt-btn" onclick="shareToSocial(this, 'facebook')"><i class="fa-brands fa-facebook-f"></i><span>Facebook</span></div>
+                                </div>
+                                <div class="glass-copy-row">
+                                    <input type="text" class="glass-copy-input" readonly value="https://rorraxy.com/product?id=${item.productId}">
+                                    <button class="glass-copy-btn" onclick="copyLinkDirectSilent(this)">COPY</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html = '<p style="font-size:0.72rem; color:#888; padding:10px; grid-column: 1/-1; text-align:center;">কোনো প্রোডাক্ট পাওয়া যায়নি।</p>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastBox');
+            if(!toast) return;
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        function modifyQuantity(val) {
+            currentItemQuantity += val;
+            if (currentItemQuantity < 1) currentItemQuantity = 1;
+            document.getElementById('itemQtyInputVal').value = currentItemQuantity;
+        }
+
+        function manualQuantityInput(input) {
+            let val = parseInt(input.value);
+            currentItemQuantity = (isNaN(val) || val < 1) ? 1 : val;
+        }
+
+        function saveCustomSizeNote() {
+            let inputVal = document.getElementById('customSizeInputField').value.trim();
+            savedCustomNote = inputVal !== "" ? inputVal : "STANDARD";
+            
+            let saveBtn = document.getElementById('customSaveBtnElement');
+            saveBtn.innerText = "SAVED ✓";
+            saveBtn.classList.add('saved-success');
+            
+            showToast('কাস্টম সাইজ সফলভাবে সেভ করা হয়েছে!');
+
+            setTimeout(() => {
+                saveBtn.innerText = "SAVE";
+                saveBtn.classList.remove('saved-success');
+            }, 2000);
+        }
+
+        function executeOrderNow(event) {
+            let chosenSize = savedCustomNote !== "" ? savedCustomNote : (document.getElementById('customSizeInputField').value.trim() || "STANDARD");
+            let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+            
+            let existingItem = cart.find(item => item.productId === activeProductId && item.size === chosenSize);
+            if(existingItem) {
+                existingItem.qty += currentItemQuantity;
+            } else {
+                cart.push({
+                    productId: activeProductId,
+                    sellerId: activeSellerId,
+                    title: activeProductTitle,
+                    price: `$${currentUnitBasePrice.toFixed(2)}`,
+                    qty: currentItemQuantity,
+                    size: chosenSize,
+                    img: activeMediaSource
+                });
+            }
+            localStorage.setItem('rorraxy_cart', JSON.stringify(cart));
+            updateCartBadgeCount();
+            showToast('পণ্যটি সফলভাবে কার্টে যোগ করা হয়েছে!');
+        }
+
+        function updateCartBadgeCount() {
+            let cart = JSON.parse(localStorage.getItem('rorraxy_cart')) || [];
+            let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            let badge = document.getElementById('footerCartItemCountBadge');
+            if(badge) badge.innerText = totalQty;
+        }
+
+        function toggleChatModal() {
+            let modal = document.getElementById('chatModalOverlay');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function sendChatMessage() {
+            let input = document.getElementById('chatMessageInput');
+            let box = document.getElementById('chatMessagesContainer');
+            if(input.value.trim() !== "") {
+                box.innerHTML += `<div style="background:var(--gold-gradient); color:#000; padding:8px 10px; border-radius:6px; font-size:0.68rem; font-weight:700; max-width:85%; align-self:flex-end;">${input.value}</div>`;
+                input.value = "";
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>
